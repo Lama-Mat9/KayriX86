@@ -1,5 +1,5 @@
 ;
-;   KayriX boot sector program (Version 9)
+;   KayriX86 boot sector program (Version 9)
 ;   Introduces read_dsk to read data from disk, and adds a test read.
 ;   Adds newline and carriage return to basic strings.
 ;
@@ -56,7 +56,7 @@ main:
 ; Global data defined here
 
 ; Strings that we could print, 0 string end delimiter.
-STRING1: db "Starting KayriX OS... ", 0xA, 0xD, 0            ; Reminder: 0xA is newline
+STRING1: db "Starting KayriX86 OS... ", 0xA, 0xD, 0            ; Reminder: 0xA is newline
 DISK_ERROR_MSG: db "Disk read error !", 0xA, 0xD, 0         ; 0xD is carriage return
 
 ; Data storage

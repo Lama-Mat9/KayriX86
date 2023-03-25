@@ -1,0 +1,11 @@
+This version implements a Bios Parameter Block (BPB) !
+The BPB is basically what i was searching for all along. It describes how the physical disk is setup.
+Omitting the BPB was the reason why my Boot Sector was stable on emulators but not on real hardware.
+Apparently, it is meaningless if we're not using a floppy disk, but my BIOS seems to require it to boot.
+Otherwise, it would usually do random things like writing half of my string or one of two strings or even read all memory.
+The latest BPBs seem to be from the DOS era, i've used one from DOS 4.0 for a 1.44MB floppy.
+What's weird is that windows 10 now recognises my USB as a drive with a capacity of both 14.32 Go and 1 Mo.
+I think that windows reads the BPB to get the volume size that i wrote in it, but still knows somehow that this is a 16Go usb drive.
+I hope that the floppy drive BPB (1.44mb) won't later prevent me from using the rest of the drive's space, as a 1Mo OS is hmmmm
+
+This means that the Boot Sector is finally usable on real hardware. That's the only modification that V6 has, and that's already a lot. 

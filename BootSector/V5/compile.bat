@@ -1,0 +1,1 @@
+nasm -f bin src/BootSectorV5.asm -o build/BootSectorV5.bin

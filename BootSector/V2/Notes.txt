@@ -1,0 +1,1 @@
+Works the same way as V1 (Loops indefinitely) but this time i wrote it in x86_32 asm, and compiled it with nasm.

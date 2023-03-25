@@ -1,0 +1,1 @@
+nasm BootSectorV4.asm -f bin -o BootSectorV4.bin

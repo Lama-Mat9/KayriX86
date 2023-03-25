@@ -1,0 +1,7 @@
+WARNING: I do not recommand running this version on real hardware.
+Basically i'm still investigating why stuff tends to run weirdly on real hardware but not on emulators.
+One of the reasons could be that the bios's tty is just not meant to be used for that. 
+It's a minimal implementation anyways and i shouldn't be using it. 
+
+This version makes print.asm available to all programs and simplifies the code. 
+It also respects the FASTCALL calling convention (as far as i know ofc. i've tried to make it that way lol)

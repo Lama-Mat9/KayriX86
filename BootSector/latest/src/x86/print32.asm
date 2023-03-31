@@ -6,6 +6,7 @@ WHITE_ON_BLACK equ 0x0f
 
 ; Print string (32 Bit addresses supported). Ends at 0x0 line ending
 ; Goes from low to high addresses
+; Only prints to the top-left of the screen. Will only use it for debug anyways
 prints32:
 
 ; Note:

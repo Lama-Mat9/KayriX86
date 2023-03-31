@@ -1,5 +1,5 @@
 ;
-;   KayriX86 boot sector program (Version 10)
+;   KayriX86 boot sector program(latest)
 ;
 
 org 0x7c00 ; Translate relative addresses to absolute ones
@@ -42,6 +42,9 @@ main:
     mov dx, [0x9000 + 512]  ; Do the same thing with the next sector we wrote data to
     call printh
 
+    mov ebx, STRING1
+    call prints32
+
 
     jmp $           ; Jump forever. Program stops there
 
@@ -55,7 +58,7 @@ main:
 ; Global data defined here
 
 ; Strings that we could print, 0 string end delimiter.
-STRING1: db "Starting KayriX86 OS... ", 0xA, 0xD, 0            ; Reminder: 0xA is newline
+STRING1: db "Starting KayriX86... ", 0xA, 0xD, 0            ; Reminder: 0xA is newline
 DISK_ERROR_MSG: db "Disk read error !", 0xA, 0xD, 0         ; 0xD is carriage return
 
 ; Data storage

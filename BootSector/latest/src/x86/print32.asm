@@ -1,6 +1,6 @@
 ; Constant values
-VIDEO_MEMORY equ 0x000b8000    ; The start of video memory
-WHITE_ON_BLACK equ 0x0007
+VIDEO_MEMORY equ 0x0b8000    ; The start of video memory
+WHITE_ON_BLACK equ 0x07
 
 ; Print string (32 Bit addresses supported). Ends at 0x0 line ending
 ; Goes from low to high addresses
@@ -23,11 +23,11 @@ prints32:
 ; ---------------------------------------------------------------------------------------------------
 
     mov edx, VIDEO_MEMORY   ; Set EDX to the start of video memory
-    
-    .prints32_loop:
+    mov ah, WHITE_ON_BLACK  ; Store the character attributes in AH
+
+    .loop:
     ; We put the full current character in AX
     mov al, [ebx]           ; Move character at EBX to AL
-    mov ah, WHITE_ON_BLACK  ; Store the attributes in AH
 
     mov [edx], ax   ; Write full current character to video memory
 
@@ -36,7 +36,7 @@ prints32:
 
     mov al, [ebx]   ; Put next char in al just for the comparaison
     cmp al, 0        ; If next character is not a string delimiter
-    jne .prints32_loop  ; Print the next character
+    jne .loop  ; Print the next character
 
 
     ret     ; Return to caller

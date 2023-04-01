@@ -2,7 +2,6 @@
 ;   This file contains the OS's GDT (Global Descriptor table)
 ;
 
-
 ; First 16 bits: The size of the GDT
 ; Next 32 bits: Pointer to the start of the GDT
 gdt_descriptor: 
@@ -52,13 +51,13 @@ gdt_start:
     dw 0x0          ; BASE ADDRESS START (bit 0 to 15)
 
     db 0x0          ; BASE ADDRESS (bit 16 to 23)
-    db 10010110b  ; ACCESS BYTE (P,DPL,S,E,DC,RW,A)
+    db 10010010b  ; ACCESS BYTE (P,DPL,S,E,DC,RW,A)
     ; Flags:
     ; P: Is a valid segment
     ; DPL: Has maximum privileges (Two bit long)
     ; S: Is a system segment
     ; E: Is a data segment
-    ; DC: Segment grows down
+    ; DC: Segment grows down, as a normal stack would do
     ; RW: Write access is allowed
     ; A: Bit that has to be set to 0
 

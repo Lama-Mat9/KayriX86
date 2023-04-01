@@ -36,8 +36,14 @@ switch_pm:
 
     jmp CODE_SEG:flush_pipeline ; Flush the pipeline
 
+bits 32 ; We have officially switched to protected mode
+        ; so we need to tell NASM so that it generates 32 bit code now
+
 ; Nothing particular. Just a label meant so that we can far jump to flush the CPU pipeline.
 flush_pipeline:
+
+    mov ebp, 0x90000    ; Update stack base
+    mov esp, ebp        ; Empty stack by setting stack pointer to stack base
 
     ; Our real mode registers have now meaningless values.
     ; We have update them with the appropriate values
@@ -47,9 +53,6 @@ flush_pipeline:
     mov es, ax          ; Additional segments are set to DATA too
     mov fs, ax          ; Additional segments are set to DATA too
     mov gs, ax          ; Additional segments are set to DATA too
-
-    mov ebp, 0x90000    ; Update stack base
-    mov esp, ebp        ; Empty stack by setting stack pointer to stack base
 
     jmp main32          ; Switch to protected mode's main function
 

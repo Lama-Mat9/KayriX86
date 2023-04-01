@@ -42,13 +42,15 @@ read_dsk:
 
     ret             ; Else we return to caller fine
 
-
-
-; Only accessed on read error
-.onError:
+    ; Only accessed on read error
+    .onError:
     
     ; Prints disk error message
     mov bx, DISK_ERROR_MSG      
     call prints
 
     jmp $           ; Infinite loop
+
+
+; Define global data
+DISK_ERROR_MSG: db "Disk read error !", 0xA, 0xD, 0

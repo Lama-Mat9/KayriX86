@@ -28,6 +28,9 @@ main:
 
 
     ; ---- Print data from disk test ----
+    mov bx, DISK_TEST_MSG
+    call prints
+
     mov al, 0x02            ; Load two sectors
     mov dl, [BOOT_DRIVE]    ; From the drive we just booted from
     mov dh, 0               ; Using the disk's first head
@@ -42,10 +45,6 @@ main:
     mov dx, [0x9000 + 512]  ; Do the same thing with the next sector we wrote data to
     call printh
 
-    mov dx, [0x410]
-    mov ax, 0x30
-    and dx, ax
-    call printh
 
     ; Quit real mode to use 32 bit protected mode.
     ; Execution will never come back from this jump.
@@ -57,12 +56,13 @@ main:
 %include "src/read_dsk.asm"
 %include "src/switch_pm.asm"
 
-
 ; Global data defined here
 
 ; Strings that we could print, 0 string end delimiter.
-STRING1: db "[KayriX86 Bootloader]", 0xA, 0xD, 0            ; Reminder: 0xA is newline
-DISK_ERROR_MSG: db "Disk read error !", 0xA, 0xD, 0         ; 0xD is carriage return
+STRING1: db "[KayriX86 Bootloader]", 0xA, 0xD, 0    ; Reminder: 0xA is newline, 0xD is carriage return
+DISK_TEST_MSG: db "DSK_RD_TST: ", 0     ; Disk read test. 
+                                        ; We don't have that much space in the boot sector (512 bytes)
+                                        ; so its shortened to the minimum
 
 ; Data storage
 BOOT_DRIVE: db 0        ; We need to store the index of the drive we booted from

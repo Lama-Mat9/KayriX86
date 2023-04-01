@@ -1,5 +1,5 @@
 ;
-;   KayriX86 boot sector program(latest)
+;   KayriX86 boot sector program (latest)
 ;
 
 org 0x7c00 ; Translate relative addresses to absolute ones
@@ -22,12 +22,12 @@ main:
     mov sp, bp          ; Update SP too because we moved the stack
 
 
-    ; Welcome message test
+    ; ---- Welcome message test ----
     mov bx, STRING1 ; Put the address of our string inside BX
     call prints     ; Print the string
 
 
-    ; Print data from disk test
+    ; ---- Print data from disk test ----
     mov al, 0x02            ; Load two sectors
     mov dl, [BOOT_DRIVE]    ; From the drive we just booted from
     mov dh, 0               ; Using the disk's first head
@@ -42,28 +42,30 @@ main:
     mov dx, [0x9000 + 512]  ; Do the same thing with the next sector we wrote data to
     call printh
 
-    mov ebx, STRING1
-    call prints32
+    mov dx, [0x410]
+    mov ax, 0x30
+    and dx, ax
+    call printh
 
-
-    jmp $           ; Jump forever. Program stops there
-
+    ; Quit real mode to use 32 bit protected mode.
+    ; Execution will never come back from this jump.
+    jmp switch_pm
+; -----------------------------------------------------------------------------------------------------
 
 ; Includes code here
 %include "src/print.asm"
 %include "src/read_dsk.asm"
-%include "src/x86/print32.asm"
+%include "src/switch_pm.asm"
 
 
 ; Global data defined here
 
 ; Strings that we could print, 0 string end delimiter.
-STRING1: db "Starting KayriX86... ", 0xA, 0xD, 0            ; Reminder: 0xA is newline
+STRING1: db "[KayriX86 Bootloader]", 0xA, 0xD, 0            ; Reminder: 0xA is newline
 DISK_ERROR_MSG: db "Disk read error !", 0xA, 0xD, 0         ; 0xD is carriage return
 
 ; Data storage
 BOOT_DRIVE: db 0        ; We need to store the index of the drive we booted from
-
 
 ; Padding and magic BIOS number.
 times 510-($-$$) db 0

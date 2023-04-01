@@ -1,8 +1,6 @@
-bits 32 ; We need protected mode to use these functions
-
 ; Constant values
-VIDEO_MEMORY equ 0xb8000    ; The start of video memory
-WHITE_ON_BLACK equ 0x0f
+VIDEO_MEMORY equ 0x000b8000    ; The start of video memory
+WHITE_ON_BLACK equ 0x0007
 
 ; Print string (32 Bit addresses supported). Ends at 0x0 line ending
 ; Goes from low to high addresses

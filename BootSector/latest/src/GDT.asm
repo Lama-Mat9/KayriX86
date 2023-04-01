@@ -28,7 +28,7 @@ gdt_start:
     dw 0x0          ; BASE ADDRESS START (bit 0 to 15)
 
     db 0x0          ; BASE ADDRESS (bit 16 to 23)
-    db 0x10011010b  ; ACCESS BYTE (P,DPL,S,E,DC,RW,A)
+    db 10011010b  ; ACCESS BYTE (P,DPL,S,E,DC,RW,A)
     ; Flags:
     ; P: Is a valid segment
     ; DPL: Has maximum privileges (Two bit long)
@@ -38,7 +38,7 @@ gdt_start:
     ; RW: Read access is allowed
     ; A: Bit that has to be set to 0
 
-    db 0x11001111b  ; FLAGS (G, DB, L, RESERVED), SEGMENT LIMIT (bit 16 to 19)
+    db 11001111b  ; FLAGS (G, DB, L, RESERVED), SEGMENT LIMIT (bit 16 to 19)
     ; Flags:
     ; G: Scale SEGMENT LIMIT by 4kb pages
     ; DB: Is a 32 bit protected mode segment
@@ -52,7 +52,7 @@ gdt_start:
     dw 0x0          ; BASE ADDRESS START (bit 0 to 15)
 
     db 0x0          ; BASE ADDRESS (bit 16 to 23)
-    db 0x10010110b  ; ACCESS BYTE (P,DPL,S,E,DC,RW,A)
+    db 10010110b  ; ACCESS BYTE (P,DPL,S,E,DC,RW,A)
     ; Flags:
     ; P: Is a valid segment
     ; DPL: Has maximum privileges (Two bit long)
@@ -62,7 +62,7 @@ gdt_start:
     ; RW: Write access is allowed
     ; A: Bit that has to be set to 0
 
-    db 0x11001111b  ; FLAGS (G, DB, L, RESERVED), SEGMENT LIMIT (bit 16 to 19)
+    db 11001111b  ; FLAGS (G, DB, L, RESERVED), SEGMENT LIMIT (bit 16 to 19)
     ; Flags:
     ; G: Scale SEGMENT LIMIT by 4kb pages
     ; DB: Is a 32 bit protected mode segment

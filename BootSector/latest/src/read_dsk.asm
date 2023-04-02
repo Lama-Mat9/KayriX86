@@ -23,24 +23,21 @@ read_dsk:
 
 ; ----------------------------------------------------------------
 
-    push ax         ; Keep ax on the stack so that we can recall
-                    ; how many sectors were expected to be read
-                    ; in AL
-
     mov ah, 0x02    ; BIOS read sector routine code
     int 0x13        ; BIOS sys interrupt
 
     jc .onError     ; If there was a problem during the read
                     ; The CF (Carry Flag) should be set by the BIOS
 
+    ; Wikipedia's docs about int 13h (for ah=02h) (https://en.wikipedia.org/wiki/INT_13H)
+    ; says that the number of sectors read should be returned in AL.
+    ; Because of this, i used to check AL (after using the interrupt) corresponded
+    ; to the number of sectors that we want. 
+    ; It worked on some bioses, but i had to stop doing it because i got an HP bios that
+    ; successfully reads data as expected but does not return the number of sectors read.
+    ; It ended up triggering the error message even though everything was fine. 
 
-    pop dx          ; Restore AL inside of DL
-    cmp al, dl      ; This way we compare how many sectors were read (AL)
-                    ; compared to how many we wanted to read (DL)
-    jne .onError    ; AL != DL      Raises an error
-
-
-    ret             ; Else we return to caller fine
+    ret
 
     ; Only accessed on read error
     .onError:

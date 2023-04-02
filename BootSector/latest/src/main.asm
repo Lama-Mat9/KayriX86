@@ -44,17 +44,17 @@ main:
 
 
     ; ---- Print data from disk test ----
-    mov bx, DISK_ID_MSG
+    mov bx, DISK_ID_MSG     ; Message that comes with drive ID print
     call prints
 
-    mov dx, [BOOT_DRIVE]
-    call printh
+    mov dx, [BOOT_DRIVE]    ; Print the ID that the BIOS gave to our boot drive.
+    call printh             ; Typically 0x80 for "first hard disk".
     call newline
 
-    mov bx, DISK_TEST_MSG
+    mov bx, DISK_TEST_MSG   ; Message that comes with drive test
     call prints
 
-    mov al, 0x01            ; Load one sector
+    mov al, 0x1            ; Load one sector
     mov dl, [BOOT_DRIVE]    ; From the drive we just booted from
     mov dh, 0               ; Using the disk's first head
     mov cl, 0x02            ; Starting from the first sector that isnt the boot sector (BootSector is at 0x01)
@@ -90,7 +90,6 @@ BOOT_DRIVE: db 0        ; We need to store the index of the drive we booted from
 ; Padding and magic BIOS number.
 times 510-($-$$) db 0
 dw 0xaa55
-
 
 ; BOOTSECTOR ENDED HERE
 

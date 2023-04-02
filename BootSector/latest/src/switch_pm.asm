@@ -34,7 +34,7 @@ switch_pm:
     ; Knowing this, we can use a far jump to flush the pipeline.
 
 
-    jmp CODE_SEG:flush_pipeline ; Flush the pipeline
+    jmp CODE_SEG:flush_pipeline ; Flush the pipeline using a far jump
 
 bits 32 ; We have officially switched to protected mode
         ; so we need to tell NASM so that it generates 32 bit code now

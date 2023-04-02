@@ -11,16 +11,31 @@ boot:   ; Program is read from top to bottom, so this will be the "entry point".
     times 0x3E-($-$$) db 0  ; Empty BPB (DOS 4.0 EBPB). Space seems to be allocated until 0x3E. We keep it fully empty.
 
 main:
+    ; ---- Setup segmentation registers ----
+    ; Segmentation registers are often used implicitly in instructions, even if we don't see them.
+    ; For example, the MOV instruction will force us to use an offset from DS, and CMPSB forces DS and ES.
+    ; The BIOS (on real hardware) doesn't seem to cleanup segment registers before it passes control to our OS.
+    ; So we need to set some segmentation registers to 0 so that we can use linear addresses correctly. (Just in case). 
     xor ax, ax      ; Set AX to 0 so that we can set other registers to 0
     mov ds, ax      ; Set DS to 0
     mov es, ax      ; Set ES to 0
+    mov fs, ax      ; Set FS to 0
+    mov gs, ax      ; Set GS to 0
+    mov ss, ax      ; Stack is relocated from 0x0
 
+    mov bp, 0x8000      ; Put our stack frame far away so that we don't touch it accidentally
+    mov sp, bp          ; Update SP too because we moved the stack frame
+
+    ; ---- Collecting info ----
     mov [BOOT_DRIVE], dl    ; The BIOS should put our boot drive index in DL
-                            ; We store it for later
+                            ; We store now for later before someone erases it
 
-    mov bp, 0x8000      ; Put our stack base far away so that we don't touch it accidentally
-    mov sp, bp          ; Update SP too because we moved the stack
-
+    ; ---- Setup the display mode ----
+    mov al, 0x03        ; 80 x 25 text tty. 16 Colors supported. SHOULD be 720x400 resolution but i'm not sure.
+    mov ah, 0x0         ; "Set video mode" BIOS routine parameter
+    int 0x10            ; "Video services" BIOS routine interrupt call "code"
+    ; Note that it will also clear the screen for us. 
+    ; For information about this interrupt, visit: https://en.wikipedia.org/wiki/INT_10H
 
     ; ---- Welcome message test ----
     mov bx, STRING1 ; Put the address of our string inside BX

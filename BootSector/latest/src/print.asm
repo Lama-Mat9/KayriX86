@@ -133,3 +133,13 @@ printh:
     pop bx
 
     ret
+
+; Sets cursor to the start of next line
+newline:
+    push 0x0        ; End of our characters to print (Two bytes)
+    push 0x0A0D     ; Newline and carriage return code pushed to the stack
+    mov bx, sp      ; Give the stack as parameter to prints
+    call prints
+    add sp, 4       ; Free the four bytes that we've used
+
+    ret

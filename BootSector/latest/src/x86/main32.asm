@@ -16,4 +16,4 @@ main32:
 %include "src/x86/print32.asm"
 
 ; Global data defined here
-PM_STRING: db "Protected mode is now ON", 0
+PM_STRING: db "Protected mode ON", 0

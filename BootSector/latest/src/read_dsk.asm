@@ -53,4 +53,4 @@ read_dsk:
 
 
 ; Define global data
-DISK_ERROR_MSG: db "Disk read error !", 0xA, 0xD, 0
+DISK_ERROR_MSG: db "DSK_RD_ERR!", 0

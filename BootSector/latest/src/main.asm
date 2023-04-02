@@ -40,13 +40,21 @@ main:
     ; ---- Welcome message test ----
     mov bx, STRING1 ; Put the address of our string inside BX
     call prints     ; Print the string
+    call newline
 
 
     ; ---- Print data from disk test ----
+    mov bx, DISK_ID_MSG
+    call prints
+
+    mov dx, [BOOT_DRIVE]
+    call printh
+    call newline
+
     mov bx, DISK_TEST_MSG
     call prints
 
-    mov al, 0x02            ; Load two sectors
+    mov al, 0x01            ; Load one sector
     mov dl, [BOOT_DRIVE]    ; From the drive we just booted from
     mov dh, 0               ; Using the disk's first head
     mov cl, 0x02            ; Starting from the first sector that isnt the boot sector (BootSector is at 0x01)
@@ -56,10 +64,6 @@ main:
 
     mov dx, [0x9000]        ; Retrieve the two first bytes at the first sector where we just wrote data
     call printh             ; And print these bytes
-
-    mov dx, [0x9000 + 512]  ; Do the same thing with the next sector we wrote data to
-    call printh
-
 
     ; Quit real mode to use 32 bit protected mode.
     ; Execution will never come back from this jump.
@@ -74,10 +78,11 @@ main:
 ; Global data defined here
 
 ; Strings that we could print, 0 string end delimiter.
-STRING1: db "[KayriX86 Bootloader]", 0xA, 0xD, 0    ; Reminder: 0xA is newline, 0xD is carriage return
+STRING1: db "[KayriX86 Bootloader]", 0    ; Reminder: 0xA is newline, 0xD is carriage return
 DISK_TEST_MSG: db "DSK_RD_TST: ", 0     ; Disk read test. 
                                         ; We don't have that much space in the boot sector (512 bytes)
                                         ; so its shortened to the minimum
+DISK_ID_MSG: db "DSK_ID: ", 0
 
 ; Data storage
 BOOT_DRIVE: db 0        ; We need to store the index of the drive we booted from
@@ -89,7 +94,5 @@ dw 0xaa55
 
 ; BOOTSECTOR ENDED HERE
 
-
-; Test data to try reading from disk, written far from the bootsector
-times 256 dw 0xC0FF     ; 256 words = 512 bytes = First sector
-times 256 dw 0xEEEE     ; 256 words = 512 bytes = Second sector
+; Writing two test bytes right after the boot sector for disk read test
+TEST_HEX: dw ":p"

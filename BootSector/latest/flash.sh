@@ -1,3 +1,5 @@
+#!/bin/bash
+
 #Find attached drives
 lsblk |  grep 'disk'
 

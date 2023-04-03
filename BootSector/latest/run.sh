@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # Compatibility reasons with my home setup
 if command -v qemu-virgil
 then

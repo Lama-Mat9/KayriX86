@@ -59,10 +59,10 @@ main:
     mov dh, 0               ; Using the disk's first head
     mov cl, 0x02            ; Starting from the first sector that isnt the boot sector (BootSector is at 0x01)
     mov ch, 0x00            ; With head on track 0
-    mov bx, 0x9000          ; And copy result to ram at this address
+    mov bx, 0x8000          ; And copy result to ram at this address
     call read_dsk
 
-    mov dx, [0x9000]        ; Retrieve the two first bytes at the first sector where we just wrote data
+    mov dx, [0x8000]        ; Retrieve the two first bytes at the first sector where we just wrote data
     call printh             ; And print these bytes
 
     ; Quit real mode to use 32 bit protected mode.

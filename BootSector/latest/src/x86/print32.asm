@@ -16,13 +16,13 @@ prints32:
 
     ; EBX: Start of the string
     ; al: X Position to use
-    ; ch: Y Position to use
+    ; ah: Y Position to use
 
 ; Usage example:
 
     ; mov ebx, PM_STRING
     ; mov al, 0x0
-    ; mov ch, 0x0
+    ; mov ah, 0x0
     ; call prints32
 
 ; ---------------------------------------------------------------------------------------------------
@@ -34,17 +34,19 @@ prints32:
     ; Therefore, an offset of 2 * Y * 80 + 2 * X should put us to the right position.
 
     ; ---- Adding 2 * X ----
-    xor ah, ah      ; Make sure that AH is empty
+    push eax        ; Preserve EAX (params) to be restored for later use
+    and eax, 11111111b  ; Keep only AL in EAX
     mov cl, 0x2     ; Need a general purpose register to hold 2 for MUL
-    mul cl          ; Multiply AX (implicitly) with CL (value of 2)
+    mul cl          ; Multiply AL (implicitly) with CL (value of 2) to AX
     add edx, eax    ; Add the result to our pointer in video memory
+    pop eax         ; Restore EAX (params) for later use
 
     ; ---- Adding 2 * Y * 80 ----
-    xor eax, eax      ; Make sure that AX is empty
-    mov al, ch      ; Put Y position in AL to multiply AX
+    and eax, 1111111100000000b  ; Keep only AH in EAX
+    mov al, ah      ; Put Y position in AL to multiply AL
     mov cl, 160     ; 2 * 80 = 160. We hold it here for mul
-    mul cl          ; AX * CL = 160 * Y
-    add edx, eax
+    mul cl          ; AL * CL = 160 * Y
+    add edx, eax    ; Add the result to our pointer in video memory
 
     mov ah, WHITE_ON_BLACK  ; Store the character attributes in AH
                             ; If we wrote text in it, it would be on the top left of the screen.

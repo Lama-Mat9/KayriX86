@@ -7,7 +7,6 @@ main32:
 
     ; ---- Print protected mode msg ----
     mov ebx, PM_STRING
-    xor eax, eax
     mov al, 0x0             ; Set the message's X position
     mov ah, 24              ; Set the message's Y position
     call prints32

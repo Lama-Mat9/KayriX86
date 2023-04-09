@@ -23,8 +23,7 @@ main:
     mov gs, ax      ; Set GS to 0
     mov ss, ax      ; Stack is relocated from 0x0
 
-    ; 512 byte stack (0x8000 - 0x7e00) -> 0x7e00 being the end of the boot sector in memory
-    mov bp, 0x8000      ; Put our stack frame far away from 0x7c00 (this code) so that we don't touch it accidentally
+    mov bp, 0x9000      ; Put our stack frame far away from 0x7c00 (this code) so that we don't touch it accidentally
     mov sp, bp          ; Update SP too because we moved the stack frame
 
     ; ---- Collecting info ----
@@ -39,20 +38,20 @@ main:
     ; For information about this interrupt, visit: https://en.wikipedia.org/wiki/INT_10H
 
     ; ---- Welcome message test ----
-    mov bx, STRING1 ; Put the address of our string inside BX
+    mov bx, START_STRING ; Put the address of our string inside BX
     call prints     ; Print the string
-    call newline
+    call newline    ; Go down one line and carriage return too
 
 
-    ; ---- Print data from disk test ----
-    mov bx, DISK_ID_MSG     ; Message that comes with drive ID print
-    call prints
+    ; ---- Load rest of the code from disk ----
+    mov bx, DRIVE_ID_MSG        ; Message that comes with drive ID print
+    call prints                 ; It prints the ID that the BIOS gave to our the boot drive
 
     mov dx, [BOOT_DRIVE]    ; Print the ID that the BIOS gave to our boot drive.
     call printh             ; Typically 0x80 for "first hard disk" on systems that support floppys
     call newline            ; and 0x00 for systems that don't support them.
 
-    mov bx, DISK_TEST_MSG   ; Message that comes with drive test
+    mov bx, SIGNATURE_MSG   ; Message that comes with drive read
     call prints
 
     mov al, 0x1             ; Load one sector
@@ -60,39 +59,51 @@ main:
     mov dh, 0               ; Using the disk's first head
     mov cl, 0x02            ; Starting from the first sector that isnt the boot sector (BootSector is at 0x01)
     mov ch, 0x00            ; With head on track 0
-    mov bx, 0x8000          ; And copy result to ram at this address
+    mov bx, 0x7e00          ; And copy result to ram at this address
     call read_dsk
 
-    mov dx, [0x8000]        ; Retrieve the two first bytes at the first sector where we just wrote data
-    call printh             ; And print these bytes
+    mov dx, [0x7e00]        ; Retrieve the two first bytes at the first sector where we just wrote data to (signature)
+    cmp dx, 0x703A          ; Compare these bytes with the expected signature
+    je .signature_ok        ; We skip the following if the read signature corresponds to the expected signature
+    
+    mov bx, SIGNATURE_BAD   ; Tell the user that the signature of loaded sector is not ok
+    call prints
+    jmp $                   ; Jump to this line (infinite loop, stops execution)
+
+    .signature_ok:          ; If the loaded sector signature was correct
+    mov bx, SIGNATURE_OK    ; Tell the user, on the same line as before
+    call prints
 
     ; Quit real mode to use 32 bit protected mode.
     ; Execution will never come back from this jump.
     jmp switch_pm
 ; -----------------------------------------------------------------------------------------------------
 
-; Includes code here
-%include "src/print.asm"
-%include "src/read_dsk.asm"
-%include "src/switch_pm.asm"
-
 ; Global data defined here
 
 ; Strings that we could print, 0 string end delimiter.
-STRING1: db "[KayriX86 Bootloader]", 0    ; Reminder: 0xA is newline, 0xD is carriage return
-DISK_TEST_MSG: db "DSK_RD_TST: ", 0     ; Disk read test. 
-                                        ; We don't have that much space in the boot sector (512 bytes)
-                                        ; so its shortened to the minimum
-DISK_ID_MSG: db "DSK_ID: ", 0
+START_STRING: db "[KayriX86 Bootloader]", 0      ; Reminder: 0xA is newline, 0xD is carriage return
+
+SIGNATURE_MSG: db "Loaded signature: ", 0   ; Disk loaded sector signature test. 
+SIGNATURE_OK: db "OK", 0                    ; What's printed when correct signature read
+SIGNATURE_BAD: db "Bad signature", 0        ; Printed when bad signature read
+
+DRIVE_ID_MSG: db "Drive ID: ", 0
 
 ; Data storage
-BOOT_DRIVE: db 0        ; We need to store the index of the drive we booted from
+BOOT_DRIVE: dw 0x0        ; We need to store the index of the drive we booted from
+
+; Includes code here
+%include "src/print.asm"
+%include "src/read_dsk.asm"
 
 ; Padding and magic BIOS number.
-times 510-($-$$) db 0
-dw 0xaa55
+times 510-($-$$) db 0   ; Leave 0s everywhere until the 510th byte where we'll write magic number.
+dw 0xaa55               ; Magic number indicating to the BIOS that this code is bootable.
 
-; BOOTSECTOR ENDED HERE
+; ---- BOOTSECTOR ENDED HERE ----
 
 ; Writing two test bytes right after the boot sector for disk read test
-TEST_HEX: dw ":p"
+TEST_HEX: dw ":p"   ; It's the sector's signature to check if it was loaded properly
+
+%include "src/switch_pm.asm"

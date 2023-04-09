@@ -37,6 +37,7 @@ printh:
 
     ; The stack goes from high to low addresses. While prints goes from low to high addresses
     ; This means that this function will reverse bytes so that they are printed correctly
+    ; Also, DO NOT expect the value in DX to stay the same after the function call
 
 ; Parameters:
 

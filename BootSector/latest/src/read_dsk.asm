@@ -43,11 +43,11 @@ read_dsk:
     .onError:
     
     ; Prints disk error message
-    mov bx, DISK_ERROR_MSG      
+    mov bx, DISK_RD_ERROR_MSG      
     call prints
 
     jmp $           ; Infinite loop
 
 
 ; Define global data
-DISK_ERROR_MSG: db "DSK_RD_ERR!", 0
+DISK_RD_ERROR_MSG: db "DISK_READ_ERROR!", 0

@@ -23,7 +23,8 @@ main:
     mov gs, ax      ; Set GS to 0
     mov ss, ax      ; Stack is relocated from 0x0
 
-    mov bp, 0x8000      ; Put our stack frame far away so that we don't touch it accidentally
+    ; 512 byte stack (0x8000 - 0x7e00) -> 0x7e00 being the end of the boot sector in memory
+    mov bp, 0x8000      ; Put our stack frame far away from 0x7c00 (this code) so that we don't touch it accidentally
     mov sp, bp          ; Update SP too because we moved the stack frame
 
     ; ---- Collecting info ----
@@ -48,13 +49,13 @@ main:
     call prints
 
     mov dx, [BOOT_DRIVE]    ; Print the ID that the BIOS gave to our boot drive.
-    call printh             ; Typically 0x80 for "first hard disk".
-    call newline
+    call printh             ; Typically 0x80 for "first hard disk" on systems that support floppys
+    call newline            ; and 0x00 for systems that don't support them.
 
     mov bx, DISK_TEST_MSG   ; Message that comes with drive test
     call prints
 
-    mov al, 0x1            ; Load one sector
+    mov al, 0x1             ; Load one sector
     mov dl, [BOOT_DRIVE]    ; From the drive we just booted from
     mov dh, 0               ; Using the disk's first head
     mov cl, 0x02            ; Starting from the first sector that isnt the boot sector (BootSector is at 0x01)

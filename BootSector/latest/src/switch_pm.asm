@@ -56,5 +56,5 @@ flush_pipeline:
 
     jmp main32          ; Switch to protected mode's main function
 
-%include "src/GDT.asm"
-%include "src/x86/main32.asm"
+%include "src/x86_16/GDT.asm"
+%include "src/x86_32/main32.asm"

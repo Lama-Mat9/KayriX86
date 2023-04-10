@@ -37,7 +37,7 @@ main:
     ; Note that it will also clear the screen for us. 
     ; For information about this interrupt, visit: https://en.wikipedia.org/wiki/INT_10H
 
-    ; ---- Welcome message test ----
+    ; ---- Boot message test ----
     mov bx, START_STRING ; Put the address of our string inside BX
     call prints     ; Print the string
     call newline    ; Go down one line and carriage return too
@@ -94,8 +94,8 @@ DRIVE_ID_MSG: db "Drive ID: ", 0
 BOOT_DRIVE: dw 0x0        ; We need to store the index of the drive we booted from
 
 ; Includes code here
-%include "src/print.asm"
-%include "src/read_dsk.asm"
+%include "src/x86_16/print.asm"
+%include "src/x86_16/read_dsk.asm"
 
 ; Padding and magic BIOS number.
 times 510-($-$$) db 0   ; Leave 0s everywhere until the 510th byte where we'll write magic number.

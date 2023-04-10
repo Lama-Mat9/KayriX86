@@ -13,7 +13,7 @@ main32:
 
     jmp $           ; Jump forever. Program stops there
 
-%include "src/x86/print32.asm"
+%include "src/x86_32/print32.asm"
 
 ; Global data defined here
 PM_STRING: db "Protected mode: OK", 0

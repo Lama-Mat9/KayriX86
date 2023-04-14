@@ -1,0 +1,3 @@
+Bootsector: 0x7c00 (But two sectors long LMAO)
+Stack: 0x9000 (real mode) 	0x90000 (protected mode)
+Kernel: 0x1000

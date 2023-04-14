@@ -73,6 +73,10 @@ main:
     .signature_ok:          ; If the loaded sector signature was correct
     mov bx, SIGNATURE_OK    ; Tell the user, on the same line as before
     call prints
+    call newline
+
+    ; ---- Load the kernel's code ----
+    call load_kernel
 
     ; Quit real mode to use 32 bit protected mode.
     ; Execution will never come back from this jump.
@@ -96,12 +100,13 @@ BOOT_DRIVE: dw 0x0        ; We need to store the index of the drive we booted fr
 ; Includes code here
 %include "src/x86_16/print.asm"
 %include "src/x86_16/read_dsk.asm"
+%include "src/x86_16/load_kernel.asm"
 
 ; Padding and magic BIOS number.
 times 510-($-$$) db 0   ; Leave 0s everywhere until the 510th byte where we'll write magic number.
 dw 0xaa55               ; Magic number indicating to the BIOS that this code is bootable.
 
-; ---- BOOTSECTOR ENDED HERE ----
+; ---- BOOTSECTOR's FIRST SECTOR ENDED HERE ----
 
 ; Writing two test bytes right after the boot sector for disk read test
 TEST_HEX: dw ":p"   ; It's the sector's signature to check if it was loaded properly

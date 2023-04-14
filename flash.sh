@@ -7,5 +7,5 @@ lsblk |  grep 'disk'
 read -p "Disk name:" dsk_name
 
 #Burn it to disk
-sudo dd if=./build/BootSector.bin of=/dev/$dsk_name
+sudo dd if=./build/KayriX86.iso of=/dev/$dsk_name
 

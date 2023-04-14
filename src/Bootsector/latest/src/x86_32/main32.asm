@@ -11,9 +11,14 @@ main32:
     mov ah, 24              ; Set the message's Y position
     call prints32
 
+    call KERNEL_ADDRESS     ; Jump to our kernel code
+
     jmp $           ; Jump forever. Program stops there
 
 %include "src/x86_32/print32.asm"
 
 ; Global data defined here
 PM_STRING: db "Protected mode: OK", 0
+
+; Leave 0s until the end of the second sector
+times 1024-($-$$) db 0

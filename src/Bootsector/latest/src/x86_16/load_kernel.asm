@@ -17,13 +17,16 @@ load_kernel:
     call newline
 
     ; ---- Fetching and copying the boot sector ----
-    mov al, 15              ; Load 15 sectors
+    mov al, 15              ; Load 15 sectors (Adjust with kernel code's size)
     mov dl, [BOOT_DRIVE]    ; From the drive we just booted from
     mov dh, 0               ; Using head 0
     mov cl, 0x03            ; Starting from the first sector after the two sectors reserved for Bootsector
     mov ch, 0x00            ; With head on track 0
     mov bx, KERNEL_ADDRESS  ; And copy result to the defined address
     call read_dsk
+
+    ; WARN: Asking QEMU to load more sectors from the disk image than the image contains is fine,
+    ; but only as long as we don't ask for too much.
 
     ; ---- Print a kernel loaded message ----
     mov bx, KERNEL_LOADED_MSG

@@ -13,6 +13,7 @@ main32:
 
     call KERNEL_ADDRESS     ; Jump to our kernel code
 
+    ; If the kernel ever returns to here we stop execution with an infinite loop
     jmp $           ; Jump forever. Program stops there
 
 %include "src/x86_32/print32.asm"

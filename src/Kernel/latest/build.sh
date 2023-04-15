@@ -24,7 +24,7 @@ ld -Ttext 0x1000 --oformat binary -m elf_i386 -o $SCRIPT_DIR/build/kernel.bin $S
 RET_CODE=$?	# Get return code of linker command (linker will obviously fail if compiler failed anyways)
 
 #Cleanup unnecessary files that emerged from the process
-#rm $SCRIPT_DIR/build/*.o
+rm $SCRIPT_DIR/build/*.o
 
 #	---- Printing the result ----
 #Following color codes useful for printing

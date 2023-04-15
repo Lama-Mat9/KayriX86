@@ -21,4 +21,5 @@ then
 	exit $?		#Our return code is the last command's
 else
 	echo "Encountered $STATUS build errors"
+	exit $STATUS
 fi

@@ -20,5 +20,8 @@ main32:
 ; Global data defined here
 PM_STRING: db "Protected mode: OK", 0
 
-; Leave 0s until the end of the second sector
-times 1024-($-$$) db 0
+; Leave 0s until the end of the second sector minus two bytes
+times 1022-($-$$) db 0
+
+; Writing two test bytes right at the end of the loaded boot sector (last boot sector).
+TEST_HEX: dw ":p"   ; It's the sector's signature to check if it was loaded properly

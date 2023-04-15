@@ -62,7 +62,7 @@ main:
     mov bx, 0x7e00          ; And copy result to ram at this address
     call read_dsk
 
-    mov dx, [0x7e00]        ; Retrieve the two first bytes at the first sector where we just wrote data to (signature)
+    mov dx, [TEST_HEX]      ; Retrieve the two last bytes at the sector where we just wrote data to (signature)
     cmp dx, 0x703A          ; Compare these bytes with the expected signature
     je .signature_ok        ; We skip the following if the read signature corresponds to the expected signature
     
@@ -107,8 +107,5 @@ times 510-($-$$) db 0   ; Leave 0s everywhere until the 510th byte where we'll w
 dw 0xaa55               ; Magic number indicating to the BIOS that this code is bootable.
 
 ; ---- BOOTSECTOR's FIRST SECTOR ENDED HERE ----
-
-; Writing two test bytes right after the boot sector for disk read test
-TEST_HEX: dw ":p"   ; It's the sector's signature to check if it was loaded properly
 
 %include "src/switch_pm.asm"

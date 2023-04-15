@@ -1,11 +1,17 @@
 ;
 ;   Loads the kernel at KERNEL_ADDRESS in memory, such that it can be jumped to.
+;   DOES NOT JUMP TO THE KERNEL.
 ;
 
+; Kernel code will be copied to this address
 KERNEL_ADDRESS equ 0x1000
+; Should be right in some free space before the bootsector code.
 
 load_kernel:
+
+    pusha   ; Preserve all registers
     
+    ; ---- Print a kernel loading message ----
     mov bx, KERNEL_LOADING_MSG
     call prints
     call newline
@@ -19,9 +25,12 @@ load_kernel:
     mov bx, KERNEL_ADDRESS  ; And copy result to the defined address
     call read_dsk
 
+    ; ---- Print a kernel loaded message ----
     mov bx, KERNEL_LOADED_MSG
     call prints
     call newline
+
+    popa    ; Restore all registers
 
     ret
 

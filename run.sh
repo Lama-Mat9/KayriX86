@@ -4,8 +4,11 @@
 #	Quick and dirty script to setup and launch the latest version quickly
 #
 
+#The filename of the OS
+OUTPUT_FILE=KayriX86.iso
+
 #Build the OS before launching it
-./build.sh
+./build.sh $OUTPUT_FILE
 
 STATUS=$?	#Get the build's return code (failed or succeeded)
 
@@ -23,7 +26,7 @@ echo "			---- RUNNING OS ----			"
 # Add whatever qemu command variation you have to this if statement so that it picks it
 if command -v qemu-virgil	#If qemu-virgil works (snap store)
 then
-	qemu-virgil -drive file=./build/KayriX86.iso,format=raw		#Run it
+	qemu-virgil -drive file=./build/$OUTPUT_FILE,format=raw		#Run it
 fi
 
 exit 0

@@ -13,10 +13,10 @@ rm -r ./build/*
 #Building the latest versions of necessary components
 STATUS=0	#We add all the error codes to it. Should be 0 at the end if everything is fine
 
-$BOOTSECTOR_PATH/build.sh
+bash $BOOTSECTOR_PATH/build.sh
 let "STATUS+=$?"			#Add return code to counter
 
-$KERNEL_PATH/build.sh
+bash $KERNEL_PATH/build.sh
 let "STATUS+=$?"			#Add return code to counter
 
 #Following color codes useful for printing

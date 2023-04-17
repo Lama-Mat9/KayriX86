@@ -5,13 +5,17 @@
 #
 
 #Build the OS before launching it
-./build.sh
+bash build.sh
 
 STATUS=$?	#Get the build's return code (failed or succeeded)
 
+#Color codes useful for printing
+RED='\033[0;31m'
+NC='\033[0m'
+
 if [ $STATUS != 0 ]	#If the build failed
 then
-	echo "OS won't be run after build failure. Exiting."
+	echo -e "${RED}OS won't be run after build failure. Exiting.${NC}"
 	exit $STATUS
 fi
 
@@ -27,6 +31,8 @@ echo "Using file: $BUILT_FILE"
 if command -v qemu-virgil	#If qemu-virgil works (snap store)
 then
 	qemu-virgil -drive file=./build/$BUILT_FILE,format=raw	#Run it
+else
+	echo -e "${RED}No x86 emulator found. Add yours to this script's list if necessary${NC}"
 fi
 
 exit 0

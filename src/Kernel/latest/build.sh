@@ -33,19 +33,23 @@ fi
 #Removing the old Kernel build
 rm -r $SCRIPT_DIR/build/*
 
+RET_CODE=0
+
 #	---- Building the new Kernel ----
 $C_COMPILER -ffreestanding -fno-pie -m32 -c $SCRIPT_DIR/src/*.c -o $SCRIPT_DIR/build/kernel.o
 	# -m32: Compile as 32 bit code. This can be quite complicated if you have a 64 bit compiler.
 	# -fno-pie: Don't make position independent code (our kernel will be loaded at a precise address in memory that linker knows)
+RET_CODE=$(($RET_CODE + $?))
 
 #ASM
 nasm $SCRIPT_DIR/src/entry_point.asm -f elf -o $SCRIPT_DIR/build/entry_point.o
+RET_CODE=$(($RET_CODE + $?))
 
 #Linking them together in order
 $LINKER -Ttext 0x1000 --oformat binary -m elf_i386 -o $SCRIPT_DIR/build/kernel.bin $SCRIPT_DIR/build/entry_point.o $SCRIPT_DIR/build/kernel.o
 	#-m elf_i386: Link 32 bit files.
 
-RET_CODE=$?	# Get return code of linker command (linker will obviously fail if compiler failed anyways)
+RET_CODE=$(($RET_CODE + $?))	# Get return code of linker command (linker will obviously fail if compiler failed anyways)
 
 #Cleanup unnecessary files that emerged from the process
 rm $SCRIPT_DIR/build/*.o

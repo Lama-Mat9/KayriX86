@@ -58,7 +58,7 @@ RET_CODE=$(($RET_CODE + $?))	# Get return code of linker command (linker will ob
 
 #Cleanup unnecessary files that emerged from the process
 rm $SCRIPT_DIR/build/*.o
-#rm -r $SCRIPT_DIR/build/c_objects/
+rm -r $SCRIPT_DIR/build/c_objects/
 
 #	---- Printing the result ----
 

@@ -4,8 +4,11 @@
 #	Quick and dirty script to setup and launch the latest version quickly
 #
 
+#Get path of current script
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
 #Build the OS before launching it
-bash build.sh
+bash $SCRIPT_DIR/build.sh
 
 STATUS=$?	#Get the build's return code (failed or succeeded)
 
@@ -20,6 +23,6 @@ then
 fi
 
 #Else the build was successful
-bash run.sh
+bash $SCRIPT_DIR/run.sh
 
 exit 0

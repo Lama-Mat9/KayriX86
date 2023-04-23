@@ -1,14 +1,17 @@
 #!/bin/bash
 
-BOOTSECTOR_PATH=./src/Bootsector/latest/
-KERNEL_PATH=./src/Kernel/latest/
+#Get path of current script
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+BOOTSECTOR_PATH=$SCRIPT_DIR/src/Bootsector/latest/
+KERNEL_PATH=$SCRIPT_DIR/src/Kernel/latest/
 OUTPUT_FILE_SIZE=1440000	#1.44mb image file
 OUTPUT_FILE_NAME=KayriX86.iso
 
 echo "		---- BUILDING $OUTPUT_FILE_NAME ----			"
 
 #Removing old full build
-rm -r ./build/*
+rm -r $SCRIPT_DIR/build/*
 
 #Building the latest versions of necessary components
 STATUS=0	#We add all the error codes to it. Should be 0 at the end if everything is fine
@@ -30,9 +33,9 @@ then
 
 	#Using these components to build a flashable image
 	#Whatever bin is in the build dir gets added to the ISO in this order
-	find $BOOTSECTOR_PATH/build/ -name '*.bin' -exec cat {} \; >> ./build/$OUTPUT_FILE_NAME
-	find $KERNEL_PATH/build/ -name '*.bin' -exec cat {} \; >> ./build/$OUTPUT_FILE_NAME
-	OUTSIZE=$(wc -c < ./build/$OUTPUT_FILE_NAME)	# See how many bytes the OS is currently
+	find $BOOTSECTOR_PATH/build/ -name '*.bin' -exec cat {} \; >> $SCRIPT_DIR/build/$OUTPUT_FILE_NAME
+	find $KERNEL_PATH/build/ -name '*.bin' -exec cat {} \; >> $SCRIPT_DIR/build/$OUTPUT_FILE_NAME
+	OUTSIZE=$(wc -c < $SCRIPT_DIR/build/$OUTPUT_FILE_NAME)	# See how many bytes the OS is currently
 	
 	if [ $OUTSIZE -gt $OUTPUT_FILE_SIZE ]	#If the result is bigger than the size we're asked to generate
 	then	#Don't forget to use gt instead of > as it would be interpreted as a redirection
@@ -40,11 +43,11 @@ then
 		echo "You should modify the output file size in the build script to avoid errors."
 	else
 		SIZE_DELTA=$(($OUTPUT_FILE_SIZE-$OUTSIZE))		#Calculate the number of empty bytes that we should add
-		head -c $SIZE_DELTA /dev/zero >> ./build/$OUTPUT_FILE_NAME	#Add empty bytes until we reach the desired file size
+		head -c $SIZE_DELTA /dev/zero >> $SCRIPT_DIR/build/$OUTPUT_FILE_NAME	#Add empty bytes until we reach the desired file size
 	fi
 	
 	#Checking if the result seems ok
-	if [ -f ./build/$OUTPUT_FILE_NAME ] && [ $(wc -c < ./build/$OUTPUT_FILE_NAME) == $OUTPUT_FILE_SIZE ]
+	if [ -f $SCRIPT_DIR/build/$OUTPUT_FILE_NAME ] && [ $(wc -c < $SCRIPT_DIR/build/$OUTPUT_FILE_NAME) == $OUTPUT_FILE_SIZE ]
 	then
 		echo -e "				-> ${GREEN}READY${NC}			"
 	else

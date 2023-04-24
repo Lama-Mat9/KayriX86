@@ -2,8 +2,6 @@
 
 /*
 	VGA color compatible screen driver implementation.
-
-	Might require the inclusion of read and write byte / word from port_io.c
 */
 
 //		---- Internal function prototypes ----

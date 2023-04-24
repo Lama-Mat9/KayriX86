@@ -3,7 +3,7 @@
 void print_char(char character, char attribute_byte, int row, int column);
 
 void main() {
-	char string[4] = "owo";
+	char string[] = "owo";
 	char* readchar = string;
 
 	while(*readchar != '\0') {

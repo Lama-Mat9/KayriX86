@@ -85,7 +85,7 @@ int get_cursor_offset() {
 	offset = portIO_byte_read(CGA_REGISTER_DATA);
 
 	//Now set the higher byte back to where it should be by shifting it 1 byte to the left.
-	offset << 8;
+	offset = offset << 8;
 
 	//Specify as index value that we want to access the lower byte of the cursor's location.
 	portIO_byte_write(CGA_REGISTER_CTRL, 0x0F);

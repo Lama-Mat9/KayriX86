@@ -23,7 +23,7 @@ void print_char(char character, char attribute_byte, int row, int column) {
 										(Default at cursor position)
 
 	If you need to print at current cursor position, set row and/or column to negative values.
-	If you don't want to give attributes, it to 0.
+	If you don't want to give attributes, set it to 0.
 */
 	//We keep the start of video memory in a 1 byte pointer.
 	unsigned char* video_memory = (unsigned char*) VIDEO_ADDRESS;
@@ -43,7 +43,6 @@ void print_char(char character, char attribute_byte, int row, int column) {
 
 	//TODO: Newline support
 	//	Text scrolling support
-	//	Cursor follows printed character support
 
 	//In the GPU's tty mode we can simply write ASCII chars to video memory followed by their attributes.
 	video_memory[offset] = character;
@@ -129,13 +128,13 @@ void set_cursor_offset(int offset) {
         portIO_byte_write(CGA_REGISTER_CTRL, 0x0E);
 
 	//Set the higher byte of the cursor position to the offset's higher byte.
-	portIO_byte_write(CGA_REGISTER_CTRL, higher_byte);
+	portIO_byte_write(CGA_REGISTER_DATA, higher_byte);
 
 	//Specify as index value that we want to access the lower byte of the cursor's location.
         portIO_byte_write(CGA_REGISTER_CTRL, 0x0F);
 
 	//Set the lower byte of the cursor position to the offset's lower byte.
-        portIO_byte_write(CGA_REGISTER_CTRL, lower_byte);
+        portIO_byte_write(CGA_REGISTER_DATA, lower_byte);
 }
 
 int get_screen_offset(int row, int column) {

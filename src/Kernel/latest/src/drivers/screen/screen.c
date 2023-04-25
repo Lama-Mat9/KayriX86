@@ -9,10 +9,67 @@ void print_char(char character, char attribute_byte, int row, int column);
 int get_cursor_offset();
 int get_screen_offset(int row, int column);
 void set_cursor_offset(int offset);
+void print_at_color(char* colored_string, int row, int column);
+void print_at(char* string, int row, int column);
+void print(char* string);
+void screen_scroll();
+void get_screen_coordinates(int offset, int* coordinates);
+void cursor_formFeed();
+void cursor_carriageReturn();
+void cursor_newline();
 
 //		---- External function prototypes ----
 unsigned char portIO_byte_read(unsigned short int port);
 void portIO_byte_write(unsigned short int port, unsigned char byte);
+void memcpy(void* source, const void* destination, unsigned long byte_amount);
+
+/*
+	Few patterns to note before reading the print functions:
+	Color attributes of 0x00 will be interpreted as default print color.
+	Negative row / column values will make the string be printed at current cursor position.
+*/
+
+
+void print(char* string) {
+/*
+	Function that prints a string using the default color at the current cursor position.
+*/
+	print_at(string, -1, -1);
+}
+
+void print_at(char* string, int row, int column) {
+/*
+	Function that prints a string at the specified location using the default color.
+*/
+
+	//Keeps track of the character to be printed.
+        char* nextChar = string;
+
+        while(*nextChar != '\0') {
+                print_char(*nextChar, 0, row, column + nextChar - string);
+                nextChar++;  //Move forward 1 character.
+        }
+
+}
+
+void print_at_color(char* colored_string, int row, int column) {
+/*
+	Function that prints a "colored string" at a specified location.
+	The "colored string" must be a string where each character is followed by it's attribute byte.
+
+	Example of "colored string":
+	char test[] = {'t', 0x0e, 'e', 0x0f, 'a', 0x0a};	//You can see each character and it's attribute
+	char test2[] = "o\x0e";		//This one is an 'o' with 0x0e attribute
+*/
+
+	//Keeps track of the character to be printed.
+	char* nextChar = colored_string;
+
+	while(*nextChar != '\0') {
+		print_char(*nextChar, nextChar[1], row, column + nextChar - colored_string);
+		nextChar += 2;	//Move forward 1 character and 1 attribute byte so 2 bytes.
+	}
+}
 
 void print_char(char character, char attribute_byte, int row, int column) {
 /*
@@ -21,9 +78,6 @@ void print_char(char character, char attribute_byte, int row, int column) {
 		attribute_byte:		Standardized attributes used by GPUs in tty mode. (Default white on black).
 		column / row:		Specify at which position on the screen the character should be printed
 										(Default at cursor position)
-
-	If you need to print at current cursor position, set row and/or column to negative values.
-	If you don't want to give attributes, set it to 0.
 */
 	//We keep the start of video memory in a 1 byte pointer.
 	unsigned char* video_memory = (unsigned char*) VIDEO_ADDRESS;
@@ -31,26 +85,81 @@ void print_char(char character, char attribute_byte, int row, int column) {
 	//Default print color
 	if(!attribute_byte) attribute_byte = WHITE_ON_BLACK;
 
-	//Contains the memory offset of where we are going to put the character, relative
-	//to the start of the video mapped tty memory start address.
-	int offset;
-	if(row >= 0 && row <= MAX_ROWS && column >= 0 && column <= MAX_COLUMNS) {	//If row and column valid
-		offset = get_screen_offset(row, column);		//We use them for offset
-	}
-	else {
-		offset = get_cursor_offset();		//We will print at the current cursor position
+	//In case that we weren't provided coordinates, we retrieve the cursor's row and column to use these instead.
+	if(row < 0 || column < 0) {
+		int coordinates[2];
+		get_screen_coordinates(get_cursor_offset(), coordinates);
+		column = coordinates[0];	//X coordinates are the column
+		row = coordinates[1];		//Y coordinates are the row
 	}
 
-	//TODO: Newline support
-	//	Text scrolling support
+	//TODO: Newline, formFeed and CarriageReturn parsers
+
+	//Then convert back the row / column coordinates to a memory offset
+	int offset = get_screen_offset(row, column);
 
 	//In the GPU's tty mode we can simply write ASCII chars to video memory followed by their attributes.
 	video_memory[offset] = character;
 	video_memory[offset + 1] = attribute_byte;
 
-	//We have printed one character. We can now move the cursor 2 bytes (1 character).
-	offset += 2;
-	set_cursor_offset(offset);
+	//If we have just printed a character at the last column of the last row.
+	if(row == MAX_ROWS - 1 && column == MAX_COLUMNS - 1) {
+		screen_scroll();	//We scroll one line
+	}
+	else {
+		//Else we move the cursor 2 bytes (1 character).
+		offset += 2;
+		set_cursor_offset(offset);
+	}
+}
+
+void screen_scroll() {
+/*
+	Function that moves up 1 row all of the rows of the GPU's tty.
+	This is useful when the cursor reaches the end of the screen for example.
+*/
+	//We need to copy all rows except the first one. We will copy these up 1 row.
+	memcpy((char*) VIDEO_ADDRESS + get_screen_offset(1, 0), (char*) VIDEO_ADDRESS, (MAX_ROWS-1) * 2 * MAX_COLUMNS);
+		//From end of first row in memory	To first row	Copying all of the screen minus one row.
+
+	//Once we've done that we need to cleanup the last row so that it can be used.
+	char* last_row = (char*) VIDEO_ADDRESS + get_screen_offset(MAX_ROWS - 1, 0);	//Get the address of the last row.
+
+	//Fill the whole row with nothingness.
+	for(int i = 0; i < MAX_COLUMNS * 2; i += 2) {
+		last_row[i] = 0;
+		last_row[i + 1] = WHITE_ON_BLACK;	//Fill the attribute byte of each character with the default value
+	}						//as the cursor will use that value for it's color when it's there.
+
+	//Then we need to put the cursor back at the start of the same row.
+	cursor_carriageReturn();
+}
+
+void cursor_formFeed() {
+/*
+	Function that moves the cursor to it's current X position but on the next line.
+*/
+	//Simply adding twice the amount of characters of one line will do the job
+	set_cursor_offset(get_cursor_offset() + MAX_COLUMNS * 2);
+}
+
+void cursor_carriageReturn() {
+/*
+	Function that moves the cursor at the start of the line that it's already on.
+*/
+	int offset = get_cursor_offset();
+
+	//We calculate how many characters there are from the start of the current line,
+	//and substract them from the offset address.
+	set_cursor_offset(offset - offset % (MAX_COLUMNS * 2));
+}
+
+void cursor_newline() {
+/*
+	Function that moves the cursor at the beginning of the next line.
+*/
+	cursor_formFeed();
+	cursor_carriageReturn();
 }
 
 int get_cursor_offset() {
@@ -155,4 +264,21 @@ int get_screen_offset(int row, int column) {
 	int offset = 2 * row * MAX_COLUMNS + 2 * column;
 
 	return offset;
+}
+
+void get_screen_coordinates(int offset, int coordinates[2]) {
+/*
+	Function that converts a byte offset relative to the video address into row / column coordinates.
+	This of course is made for the GPU's tty mode.
+
+	The coordinates parameter is there because we need to return two values (X and Y)
+	and returning a pointer to a local array won't work (destroyed).
+	So the function returns the coordinates in the memory areas you give it in the coordinates parameter.
+*/
+	offset /= 2; //Converting 2 bytes to 1 char by dividing the result by two
+
+	//The X coordinate of the offset address is what's left of the offset after it's at the correct row.
+	coordinates[0] = offset % MAX_COLUMNS;
+
+	coordinates[1] = (offset - coordinates[0]) / MAX_COLUMNS;
 }

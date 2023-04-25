@@ -1,13 +1,10 @@
 
 //		---- External function prototypes ----
 void print_char(char character, char attribute_byte, int row, int column);
+void print(char* string);
 
 void main() {
-	char string[] = "owowowowo";
-	char* readchar = string;
+	char string3[] = "uwu";
+	print(string3);
 
-	while(*readchar != '\0') {
-		print_char(*readchar, 0, -1, -1);
-		readchar++;
-	}
 }

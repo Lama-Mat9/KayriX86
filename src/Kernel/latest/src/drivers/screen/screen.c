@@ -16,7 +16,7 @@ void screen_scroll();
 void get_screen_coordinates(int offset, int* coordinates);
 void cursor_formFeed();
 void cursor_carriageReturn();
-void cursor_newline();
+void cursor_newLine();
 
 //		---- External function prototypes ----
 unsigned char portIO_byte_read(unsigned short int port);
@@ -79,6 +79,20 @@ void print_char(char character, char attribute_byte, int row, int column) {
 		column / row:		Specify at which position on the screen the character should be printed
 										(Default at cursor position)
 */
+
+	//		---- Special behaviors definition ----
+	switch (character) {
+		case '\n':	//The new line character
+			cursor_newLine();
+			return;	//Dont continue the function else it's gonna print the special char as ASCII
+		case '\f':	//The form feed character
+			cursor_formFeed();
+			return;
+		case '\r':	//The carriage return character
+			cursor_carriageReturn();
+			return;
+	}
+
 	//We keep the start of video memory in a 1 byte pointer.
 	unsigned char* video_memory = (unsigned char*) VIDEO_ADDRESS;
 
@@ -92,8 +106,6 @@ void print_char(char character, char attribute_byte, int row, int column) {
 		column = coordinates[0];	//X coordinates are the column
 		row = coordinates[1];		//Y coordinates are the row
 	}
-
-	//TODO: Newline, formFeed and CarriageReturn parsers
 
 	//Then convert back the row / column coordinates to a memory offset
 	int offset = get_screen_offset(row, column);
@@ -154,7 +166,7 @@ void cursor_carriageReturn() {
 	set_cursor_offset(offset - offset % (MAX_COLUMNS * 2));
 }
 
-void cursor_newline() {
+void cursor_newLine() {
 /*
 	Function that moves the cursor at the beginning of the next line.
 */

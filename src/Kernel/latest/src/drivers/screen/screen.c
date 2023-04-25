@@ -17,6 +17,7 @@ void get_screen_coordinates(int offset, int* coordinates);
 void cursor_formFeed();
 void cursor_carriageReturn();
 void cursor_newLine();
+void screen_clear();
 
 //		---- External function prototypes ----
 unsigned char portIO_byte_read(unsigned short int port);
@@ -66,7 +67,7 @@ void print_at_color(char* colored_string, int row, int column) {
 	char* nextChar = colored_string;
 
 	while(*nextChar != '\0') {
-		print_char(*nextChar, nextChar[1], row, column + nextChar - colored_string);
+		print_char(nextChar[0], nextChar[1], row, column + nextChar - colored_string);
 		nextChar += 2;	//Move forward 1 character and 1 attribute byte so 2 bytes.
 	}
 }
@@ -145,6 +146,27 @@ void screen_scroll() {
 
 	//Then we need to put the cursor back at the start of the same row.
 	cursor_carriageReturn();
+}
+
+void screen_clear() {
+/*
+	Clears the screen with default color attributes and sets cursor at start position.
+*/
+	//Holds the pointer to the byte we are going to erase. Starts at the start of the GPU's tty video memory.
+	char* video_memory = (char*) VIDEO_ADDRESS;
+
+	//Holds the last byte that we want to erase.
+	char* lastByte = (char*) VIDEO_ADDRESS + get_screen_offset(MAX_ROWS - 1, MAX_COLUMNS - 1);
+
+	//While the current byte is not the last one
+	while(video_memory <= lastByte) {
+		video_memory[0] = 0;			//Erase the character byte
+		video_memory[1] = WHITE_ON_BLACK;	//Reset the attribute byte
+		video_memory += 2;			//Move forward over the bytes we've just erased.
+	}
+
+	//Reset the cursor position.
+	set_cursor_offset(0);
 }
 
 void cursor_formFeed() {

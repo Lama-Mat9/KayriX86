@@ -5,9 +5,6 @@ echo "			---- BUILDING KERNEL ----			"
 #Get path of current script
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-#Get the current device's architecture to tweak compiler
-BUILDER_ARCH=$(dpkg --print-architecture)
-
 #Following color codes useful for printing
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -28,10 +25,11 @@ mkdir $SCRIPT_DIR/build/c_objects/
 cd $SCRIPT_DIR/build/c_objects/
 
 #	---- Building the new Kernel ----
-$C_COMPILER -ffreestanding -fno-pie -m32 -c $(find $SCRIPT_DIR/src/ -type f -iname *.c -print) 
+$C_COMPILER -ffreestanding -fno-pie -m32 -c $(find $SCRIPT_DIR/src/ -type f -iname *.c -print) -Wall -Wextra
 	# -m32: Compile as 32 bit code. This can be quite complicated if you have a 64 bit compiler.
 	# -fno-pie: Don't make position independent code (our kernel will be loaded at a precise address in memory that linker knows)
 	# $(find [...] ): Recursively finds all .c files in our src directory
+	#-Wall -Wextra: Give as much warnings as possible. Could help debug.
 RET_CODE=$(($RET_CODE + $?))
 
 #ASM

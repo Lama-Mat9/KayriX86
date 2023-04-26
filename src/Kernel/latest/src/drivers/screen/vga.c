@@ -1,28 +1,19 @@
-#include "interface.h"
+#include "vga.h"
+
+//We include this to get access to size_t
+#ifndef STDDEF
+#define STDDEF
+#include <stddef.h>
+#endif
 
 /*
 	VGA color compatible screen driver implementation.
 */
 
-//		---- Internal function prototypes ----
-void print_char(char character, char attribute_byte, int row, int column);
-int get_cursor_offset();
-int get_screen_offset(int row, int column);
-void set_cursor_offset(int offset);
-void print_at_color(char* colored_string, int row, int column);
-void print_at(char* string, int row, int column);
-void print(char* string);
-void screen_scroll();
-void get_screen_coordinates(int offset, int* coordinates);
-void cursor_formFeed();
-void cursor_carriageReturn();
-void cursor_newLine();
-void screen_clear();
-
 //		---- External function prototypes ----
 unsigned char portIO_byte_read(unsigned short int port);
 void portIO_byte_write(unsigned short int port, unsigned char byte);
-void memcpy(void* source, const void* destination, unsigned long byte_amount);
+void memcpy(void* source, const void* destination, size_t byte_amount);
 
 /*
 	Few patterns to note before reading the print functions:
@@ -98,7 +89,7 @@ void print_char(char character, char attribute_byte, int row, int column) {
 	unsigned char* video_memory = (unsigned char*) VIDEO_ADDRESS;
 
 	//Default print color
-	if(!attribute_byte) attribute_byte = WHITE_ON_BLACK;
+	if(!attribute_byte) attribute_byte = VGA_COLOR_LIGHT_GREY;
 
 	//In case that we weren't provided coordinates, we retrieve the cursor's row and column to use these instead.
 	if(row < 0 || column < 0) {
@@ -141,7 +132,7 @@ void screen_scroll() {
 	//Fill the whole row with nothingness.
 	for(int i = 0; i < MAX_COLUMNS * 2; i += 2) {
 		last_row[i] = 0;
-		last_row[i + 1] = WHITE_ON_BLACK;	//Fill the attribute byte of each character with the default value
+		last_row[i + 1] = VGA_COLOR_LIGHT_GREY;	//Fill the attribute byte of each character with the default value
 	}						//as the cursor will use that value for it's color when it's there.
 
 	//Then we need to put the cursor back at the start of the same row.
@@ -161,7 +152,7 @@ void screen_clear() {
 	//While the current byte is not the last one
 	while(video_memory <= lastByte) {
 		video_memory[0] = 0;			//Erase the character byte
-		video_memory[1] = WHITE_ON_BLACK;	//Reset the attribute byte
+		video_memory[1] = VGA_COLOR_LIGHT_GREY;	//Reset the attribute byte
 		video_memory += 2;			//Move forward over the bytes we've just erased.
 	}
 

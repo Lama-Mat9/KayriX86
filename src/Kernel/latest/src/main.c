@@ -1,3 +1,8 @@
+/* Check if the compiler thinks you are targeting linux. */
+#if defined(__linux__)
+#error "You are not using a cross-compiler, you will most certainly run into trouble"
+#endif
+
 //		---- External function prototypes ----
 void print(char* string);
 void print_at_color(char* colored_string, int row, int column);

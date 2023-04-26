@@ -2,10 +2,16 @@
 	Defines helpful functions for memory manipulation.
 */
 
-//		---- Internal function prototypes ----
-void memcopy(void* source, const void* destination, unsigned long byte_amount);
+//We include this to get access to size_t
+#ifndef STDDEF
+#define STDDEF
+#include <stddef.h>
+#endif
 
-void memcpy(void* source, const void* destination, unsigned long byte_amount) {
+//		---- Internal function prototypes ----
+void memcopy(void* source, const void* destination, size_t byte_amount);
+
+void memcpy(void* source, const void* destination, size_t byte_amount) {
 /*
 	Function that copies byte_amount amount of bytes from source to destination address.
 
@@ -21,7 +27,7 @@ void memcpy(void* source, const void* destination, unsigned long byte_amount) {
 	seems unoptimized. Maybe fix this later.
 */
 	//Byte per byte copy of the source.
-	for(unsigned long i = 0; i < byte_amount; i++) {
+	for(size_t i = 0; i < byte_amount; i++) {
 		*((char*) destination + i) = *((char*) source + i);
 	}
 

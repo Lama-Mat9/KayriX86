@@ -2,6 +2,8 @@
 	Manual implementation of standard C functions needed while we have no access to a C library yet.
 */
 
+#include <stdbool.h>
+
 //		---- Internal function prototypes ----
 char* strrev(char* string);
 char* itoa(int value, char* string, int base);
@@ -17,8 +19,8 @@ char* itoa(int value, char* string, int base) {
 	//The index that we will use through this function to write to input string.
 	int index = 0;
 
-	//We have no booleans so we use an unsigned char
-	unsigned char isNegative = 0;
+	//We will keep track of if the number was negative
+	bool isNegative = false;
 
 	//Zero has to be handled explicitly.
 	//Else empty string would get printed.
@@ -32,7 +34,7 @@ char* itoa(int value, char* string, int base) {
 	//Otherwise they are considered unsigned.
 	if(base == 10 && value < 0) {
 		value = value * -1;	//We have to do our calculations on a positive number
-		isNegative = 1;		//We keep the fact that it was negative though
+		isNegative = true;		//We keep the fact that it was negative though
 	}
 
 

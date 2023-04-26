@@ -1,9 +1,0 @@
-WARNING: I do not recommand running this on real hardware. This program has the location to where it should be loaded in memory hardcoded inside of it.
-I do not believe that there is a way to overcome this problem as long as we are in "real mode". We'll switch to protected mode later.
-If you wanna try this, use an emulator like QEMU (my fav) or BOSCHS.
-
-This version implements an easy way to create and print strings using CRLF line endings because the old version used two instructions per character so it was tedious to write anything.
-It will print a long string of text on the screen to demonstrate it's ability to manage long strings :)
-
-It is still not perfect though, as the fact that we are using the bios's tty puts all strings after one another, on the same line.
-I do not know if we can even print to another line, all i know is that i'll try to leave the bios tty mode afterwards anyway so we don't have to worry about that too much.

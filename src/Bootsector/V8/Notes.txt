@@ -1,6 +1,0 @@
-In this new version i've added a way to print hexadecimal and therefore have renamed print to prints.
-This way we will now be able to print memory addresses easily for debugging purposes.
-
-CRLF was also replaced by a 0x00 byte at the end of each string because 0x00 can be read from both ways.
-This is useful because i had some problems when trying to use the stack instead of hardcoding values in
-	the code like i was doing before.

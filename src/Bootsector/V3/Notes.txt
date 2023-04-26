@@ -1,5 +1,0 @@
-This version prints "Hello" to the user.
-I have made a mod version aswell, it's the same but with a blue background (Not because i thought that it would look good, im just tryin)
-
-The blue version is not recommanded because for some reason on the emulator it works fine,
-	 but on my laptop the colors doesn't show and "Hello" becomes "Hell"

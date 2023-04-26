@@ -1,1 +1,0 @@
-Wrote it in raw hexadecimal in a hex editor. Works fine (loops indefinitely).

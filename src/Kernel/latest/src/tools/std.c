@@ -3,7 +3,6 @@
 */
 
 //		---- Internal function prototypes ----
-//unsigned int strlen(const char* string);
 char* strrev(char* string);
 char* itoa(int value, char* string, int base);
 unsigned int strlen(const char* string);

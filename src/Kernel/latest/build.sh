@@ -13,22 +13,10 @@ RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m'
 
-#Architecture dependent compiler tweaks possible here
-if [ $BUILDER_ARCH == "aarch64" ]
-then
-	#C - aarch64 running termux (gcc -> clang compatibility mode)
-	C_COMPILER="clang -target i386"
-	LINKER="ld.lld"
-	#We specify to clang that we want it to make 32 bit code. Not arm.
-
-elif [ $BUILDER_ARCH == "amd64" ]
-then
-	C_COMPILER="gcc"
-	LINKER="ld"
-else
-	echo -e "${RED}Unknown builder architecture. Add your compiler to this script${NC}"
-	exit 1
-fi
+#You need to build and use a cross compiler (so that it has no access to your current OS's standard libraries).
+#Using your current OS's build of these could work, but is unsafe.
+C_COMPILER="i686-elf-gcc"
+LINKER="i686-elf-ld"
 
 #Removing the old Kernel build
 rm -r $SCRIPT_DIR/build/*

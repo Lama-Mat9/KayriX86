@@ -2,7 +2,6 @@
 //		---- External function prototypes ----
 void print(char* string);
 void print_at_color(char* colored_string, int row, int column);
-
 void screen_clear();
 
 void main() {

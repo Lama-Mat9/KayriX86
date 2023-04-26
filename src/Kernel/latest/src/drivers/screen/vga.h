@@ -2,6 +2,13 @@
 	This file defines settings for the screen driver.
 */
 
+//Prevent double inclusions by using this technique
+#ifndef VGA_H
+#define VGA_H
+
+#include <stdint.h>
+#include <stddef.h>
+
 //This is the default memory location where the GPU intercepts incoming data
 //and interprets it as ASCII then writes it to the display.
 #define VIDEO_ADDRESS 0xb8000
@@ -36,6 +43,8 @@
 #define	VGA_COLOR_LIGHT_BROWN 14
 #define	VGA_COLOR_WHITE 15
 
+#define VGA_COLOR_DEFAULT VGA_COLOR_LIGHT_GREY
+
 //              ---- Internal function prototypes ----
 void print_char(char character, char attribute_byte, int row, int column);
 int get_cursor_offset();
@@ -50,3 +59,8 @@ void cursor_formFeed();
 void cursor_carriageReturn();
 void cursor_newLine();
 void screen_clear();
+uint8_t form_attribute_byte(uint8_t bg_color, uint8_t fg_color);
+void print_int(int32_t value, int base);
+
+//End the prevent double inclusions technique
+#endif

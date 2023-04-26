@@ -1,19 +1,13 @@
-#include "vga.h"
-
-//We include this to get access to size_t
-#ifndef STDDEF
-#define STDDEF
-#include <stddef.h>
-#endif
-
 /*
 	VGA color compatible screen driver implementation.
 */
 
-//		---- External function prototypes ----
-unsigned char portIO_byte_read(unsigned short int port);
-void portIO_byte_write(unsigned short int port, unsigned char byte);
-void memcpy(void* source, const void* destination, size_t byte_amount);
+#include <stdint.h>
+#include <stddef.h>
+#include "vga.h" //For colors and things
+#include "../../tools/std.h"
+#include "../../tools/port_io.h"
+#include "../../tools/memory.h"
 
 /*
 	Few patterns to note before reading the print functions:
@@ -21,6 +15,38 @@ void memcpy(void* source, const void* destination, size_t byte_amount);
 	Negative row / column values will make the string be printed at current cursor position.
 */
 
+uint8_t form_attribute_byte(uint8_t bg_color, uint8_t fg_color) {
+/*
+	Function that takes in a background and foreground color,
+	and returns the attribute byte for these colors.
+*/
+	return bg_color << 4 | fg_color;
+}
+
+void print_int(int32_t value, int base) {
+/*
+	Function that prints an integer of any base.
+*/
+
+	//To determine the amount of space we need to store the number we
+	//have to determine how many digits are in the number.
+	int32_t valuecpy = value;
+	int digits = 0;
+	while (valuecpy != 0) {
+		valuecpy /= base;
+		digits += 1;
+	}
+
+	//If the value is negative we need another bye for '-'
+	if(value < 0) digits++;
+
+	//Allocate one byte more than the digits for \0
+	char buffer[digits + 1];
+
+	itoa(value, buffer, base);
+
+	print(buffer);
+}
 
 void print(char* string) {
 /*
@@ -89,7 +115,7 @@ void print_char(char character, char attribute_byte, int row, int column) {
 	unsigned char* video_memory = (unsigned char*) VIDEO_ADDRESS;
 
 	//Default print color
-	if(!attribute_byte) attribute_byte = VGA_COLOR_LIGHT_GREY;
+	if(!attribute_byte) attribute_byte = VGA_COLOR_DEFAULT;
 
 	//In case that we weren't provided coordinates, we retrieve the cursor's row and column to use these instead.
 	if(row < 0 || column < 0) {
@@ -132,7 +158,7 @@ void screen_scroll() {
 	//Fill the whole row with nothingness.
 	for(int i = 0; i < MAX_COLUMNS * 2; i += 2) {
 		last_row[i] = 0;
-		last_row[i + 1] = VGA_COLOR_LIGHT_GREY;	//Fill the attribute byte of each character with the default value
+		last_row[i + 1] = VGA_COLOR_DEFAULT;	//Fill the attribute byte of each character with the default value
 	}						//as the cursor will use that value for it's color when it's there.
 
 	//Then we need to put the cursor back at the start of the same row.
@@ -152,7 +178,7 @@ void screen_clear() {
 	//While the current byte is not the last one
 	while(video_memory <= lastByte) {
 		video_memory[0] = 0;			//Erase the character byte
-		video_memory[1] = VGA_COLOR_LIGHT_GREY;	//Reset the attribute byte
+		video_memory[1] = VGA_COLOR_DEFAULT;	//Reset the attribute byte
 		video_memory += 2;			//Move forward over the bytes we've just erased.
 	}
 

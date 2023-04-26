@@ -3,13 +3,7 @@
 */
 
 //We include this to get access to size_t
-#ifndef STDDEF
-#define STDDEF
 #include <stddef.h>
-#endif
-
-//		---- Internal function prototypes ----
-void memcopy(void* source, const void* destination, size_t byte_amount);
 
 void memcpy(void* source, const void* destination, size_t byte_amount) {
 /*

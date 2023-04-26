@@ -3,9 +3,10 @@
 */
 
 //		---- Internal function prototypes ----
-unsigned int strlen(const char* string);
+//unsigned int strlen(const char* string);
 char* strrev(char* string);
 char* itoa(int value, char* string, int base);
+unsigned int strlen(const char* string);
 
 char* itoa(int value, char* string, int base) {
 /*
@@ -91,6 +92,7 @@ char* strrev(char* string) {
 	return string;
 }
 
+
 unsigned int strlen(const char* string) {
 /*
 	Returns the length of a null-terminated string.
@@ -104,3 +106,4 @@ unsigned int strlen(const char* string) {
 
 	return count;
 }
+

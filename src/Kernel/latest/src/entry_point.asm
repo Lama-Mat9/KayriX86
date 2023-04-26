@@ -24,15 +24,18 @@
 
 bits 32     ; Tell NASM that we want to generate 32 bit code. 
             ; We should be in PM already much before executing the kernel.
- 
-extern main ; The kernel's main function is defined in C somewhere else, not here.
+
+extern kernel_main ; The kernel's main function is defined in C somewhere else, not here.
             ; This means that we need to tell NASM that the main function exists,
             ; so that we use it, even though it's address is unknown yet.
             ; It will be the linker's role to resolve the call to main as an 
             ; address in the ouput machine code, because the linker will have access
             ; to this code and the kernel's.
 
-call main   ; Make a return-able jump to the kernel's main function.
+global _start		; Only there for ld to shut up about the entry point. No use at all.
+_start:			;
+
+call kernel_main   ; Make a return-able jump to the kernel's main function.
 
 jmp $       ; If the kernel ever returns to here we stop execution
             ; with this infinite loop (jump to current line).

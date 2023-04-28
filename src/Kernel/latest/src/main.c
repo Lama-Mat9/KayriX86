@@ -17,5 +17,8 @@ void kernel_main() {
 
 	print_at_color(welcomeString, -1, -1);
 
-	serial_init();
+	//Our driver will try to initialise multiple COM ports. Print how many were successfully initialised.
+	print("Initialised serial ports: ");
+	print_int(serial_init(), 10);
+	print("\n");
 }

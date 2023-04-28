@@ -2,12 +2,10 @@
 	VGA color compatible screen driver implementation.
 */
 
-#include <stdint.h>
-#include <stddef.h>
 #include "vga.h" //For colors and things
 #include "../../tools/std.h"
 #include "../../tools/port_io.h"
-#include "../../tools/memory.h"
+#include "../../tools/memcpy.h"
 
 /*
 	Few patterns to note before reading the print functions:

@@ -4,6 +4,7 @@
 #endif
 
 #include "drivers/screen/vga.h"
+#include "drivers/serial/serial.h"
 
 void kernel_main() {
 	//Clear the screen before printing anything
@@ -15,4 +16,6 @@ void kernel_main() {
 				'e', 0x09, 'l', 0x09, ']', 0x07, '\n'};
 
 	print_at_color(welcomeString, -1, -1);
+
+	serial_init();
 }

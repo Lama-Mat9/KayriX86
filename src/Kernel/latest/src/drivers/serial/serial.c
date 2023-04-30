@@ -1,5 +1,6 @@
 /*
 	Serial port driver implementation
+	Keep in mind that interrupts are currently disabled.
 */
 
 #include "serial.h"
@@ -84,8 +85,8 @@ int serial_init_port(uint16_t port) {
 	//Enable FIFO with a 14 byte threshold before data gets cleared.
 	portIO_byte_write(port + 2, 0xC7);	///0xC7 = 11000111b
 
-	//Handshaking. Requests for modem so send, sets ready, IRQ enabled
-	portIO_byte_write(port + 4, 0x0B);	//0x0B = 00001011b
+	//Handshaking. Requests for modem so send, sets ready, IRQ disabled
+	portIO_byte_write(port + 4, 0x03);	//0x0B = 00000011b
 
 	//Request to send following data in loopback mode
 	portIO_byte_write(port + 4, 0x1E);	//0x1E = 00011110b
@@ -101,8 +102,8 @@ int serial_init_port(uint16_t port) {
 		return 1;
 	}
 
-	//Then if it works correctly we remove loopback, enable outputs and set ready
-	portIO_byte_write(port + 4, 0x0F);	//0x0F = 00001111b
+	//Then if it works correctly we remove loopback, set DTR and RTS.
+	portIO_byte_write(port + 4, 0x03);	//0x03 = 00000011b
 
 	//Print a message in the serial console to make sure it initialised
 	char* msg = "Serial connection initialised\f\r";

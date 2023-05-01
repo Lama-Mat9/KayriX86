@@ -1,7 +1,3 @@
-/*
-	Defines helpful functions for memory manipulation.
-*/
-
 //We include this to get access to size_t
 #include <stddef.h>
 

@@ -8,8 +8,9 @@ gdt_descriptor:
     ; Label referring to where we store the GDT descriptor structure
     ; Address to be loaded in the GDTR, never called
 
-    ; Size of the GDT (In bytes) always substracted by 1
-    ;                                   (that's the rule)
+    ; Size of the GDT (In bytes) has to be always substracted by 1
+    ; because a size of 0 results in one valid byte (page 111 of
+    ; "Intel® 64 and IA-32 Architectures Software Developer’s Manual Vol 3A")
     dw gdt_end - gdt_start - 1  ; 2 x 8 bits = 16 bit size value
 
     ; Address of the start of our GDT
@@ -70,8 +71,9 @@ gdt_start:
 
     db 0x0          ; BASE ADDRESS (24 to 31)
 
-gdt_end:
+
 ; No more GDT entries after this label
+gdt_end:
 
 ; Constants to use the GDT once loaded
 CODE_SEG equ gdt_code - gdt_start   ; Offset (Index) of code entry

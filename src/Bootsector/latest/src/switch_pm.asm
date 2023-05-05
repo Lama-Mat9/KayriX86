@@ -14,7 +14,7 @@ switch_pm:
 
     ; ---- SWITCHING TO PROTECTED MODE ----:
     cli     ; Clear interrupt: Disable interrupts until they are enabled again.
-            ; It is necessary to do since interrups are very different in protected mode.
+            ; We wouldn't want 16 bit ISRs to get executed while we are in 32 bit mode.
     
     lgdt [gdt_descriptor]   ; Load GDT Descriptor into GDTR
 
@@ -54,7 +54,13 @@ flush_pipeline:
     mov fs, ax          ; Additional segments are set to DATA too
     mov gs, ax          ; Additional segments are set to DATA too
 
+
+    lidt [idt_descriptor]   ; Load IDT descriptor into IDTR
+    sti                     ; Set interrupt flag: Re-enable interrupts so that
+                            ; our kernel can use our new 32 bit interrupts listed in the IDT.
+
     jmp main32          ; Switch to protected mode's main function
 
 %include "src/x86_16/GDT.asm"
+%include "src/x86_32/IDT.asm"
 %include "src/x86_32/main32.asm"

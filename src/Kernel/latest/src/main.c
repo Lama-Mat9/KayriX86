@@ -6,9 +6,15 @@
 #include "drivers/screen/vga.h"
 #include "drivers/serial/serial.h"
 
+//Function defined and exported in assembly.
+extern void idt_load(void);
+
 void kernel_main() {
 	//Clear the screen before printing anything
 	screen_clear();
+
+	//Enables protected mode interrupts.
+	idt_load();
 
 	//	---- Welcome msg ----
 	char welcomeString[] = { '[', 0x07, 'K', 0x07, 'a', 0x07, 'y', 0x07, 'r', 0x07, 'i', 0x07, 'X', 0x07,

@@ -34,10 +34,11 @@ RET_CODE=$(($RET_CODE + $?))
 
 #ASM
 nasm $SCRIPT_DIR/src/entry_point.asm -f elf -o $SCRIPT_DIR/build/entry_point.o
+nasm $SCRIPT_DIR/src/asm/*.asm -f elf -o $SCRIPT_DIR/build/asm_objects.o
 RET_CODE=$(($RET_CODE + $?))
 
 #Linking them together in order (entry point has to be first)
-$LINKER -Ttext 0x1000 --oformat binary -m elf_i386 -o $SCRIPT_DIR/build/kernel.bin $SCRIPT_DIR/build/entry_point.o $SCRIPT_DIR/build/c_objects/*.o
+$LINKER -Ttext 0x1000 --oformat binary -m elf_i386 -o $SCRIPT_DIR/build/kernel.bin $SCRIPT_DIR/build/entry_point.o $SCRIPT_DIR/build/c_objects/*.o $SCRIPT_DIR/build/asm_objects.o
 	#-m elf_i386: Link 32 bit files.
 
 RET_CODE=$(($RET_CODE + $?))	# Get return code of linker command (linker will obviously fail if compiler failed anyways)

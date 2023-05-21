@@ -3,9 +3,9 @@
 */
 
 #include "vga.h" //For colors and things
-#include "../../tools/std.h"
-#include "../../tools/port_io.h"
-#include "../../tools/memcpy.h"
+#include "../../microclib/std.h"
+#include "../../microclib/port_io.h"
+#include "../../microclib/memcpy.h"
 
 /*
 	Few patterns to note before reading the print functions:

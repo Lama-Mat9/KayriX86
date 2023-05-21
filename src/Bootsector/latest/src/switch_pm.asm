@@ -54,13 +54,7 @@ flush_pipeline:
     mov fs, ax          ; Additional segments are set to DATA too
     mov gs, ax          ; Additional segments are set to DATA too
 
-
-    lidt [idt_descriptor]   ; Load IDT descriptor into IDTR
-    sti                     ; Set interrupt flag: Re-enable interrupts so that
-                            ; our kernel can use our new 32 bit interrupts listed in the IDT.
-
     jmp main32          ; Switch to protected mode's main function
 
 %include "src/x86_16/GDT.asm"
-%include "src/x86_32/IDT.asm"
 %include "src/x86_32/main32.asm"

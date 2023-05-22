@@ -1,4 +1,4 @@
-#include "../drivers/screen/vga.h"
+#include "drivers/screen/vga.h"
 #include <stdint.h>
 
 //Local struct that is used to identify registers passed in order from asm generic handler to here.

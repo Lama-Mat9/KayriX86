@@ -192,6 +192,193 @@ idt_start:
     db 10001110b                    ; (1, DPL, 0, Gate type)
     dw 0x0                          ; Most significant double word for the address of the ISR
 
+    ;                   ==== Interrupt 22: Reserved ====
+    dw interrupt_handler_22          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== Interrupt 23: Reserved ====
+    dw interrupt_handler_23          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== Interrupt 24: Reserved ====
+    dw interrupt_handler_24          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== Interrupt 25: Reserved ====
+    dw interrupt_handler_25          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== Interrupt 26: Reserved ====
+    dw interrupt_handler_26          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== Interrupt 27: Reserved ====
+    dw interrupt_handler_27          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== Interrupt 28: Hypervisor Injection Exception ====
+    dw interrupt_handler_28          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== Interrupt 29: VMM Communication Exception ====
+    dw interrupt_handler_29          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== Interrupt 30: Security Exception ====
+    dw interrupt_handler_30          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== Interrupt 31: Reserved ====
+    dw interrupt_handler_31          ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+
+    ; ======================================= Master PIC IRQs =======================================
+
+    ;                   ==== IRQ 0: Programmable Interrupt Timer ====
+    dw interrupt_handler_32         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 1: Keyboard Interrupt ====
+    dw interrupt_handler_33         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 2: Cascade (Shouldn't ever be triggered) ====
+    dw interrupt_handler_34         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 3: COM2 ====
+    dw interrupt_handler_35         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 4: COM1 ====
+    dw interrupt_handler_36         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 5: LPT2 ====
+    dw interrupt_handler_37         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 6: Floppy Disk ====
+    dw interrupt_handler_38         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 7: LPT1 / Spurious Interrupt ====
+    dw interrupt_handler_39         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ; ======================================= Slave PIC IRQs =======================================
+
+    ;                   ==== IRQ 8: CMOS Real Time Clock ====
+    dw interrupt_handler_40         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 9: Peripherals / SCSI / NIC ====
+    dw interrupt_handler_41         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 10: Peripherals / SCSI / NIC ====
+    dw interrupt_handler_42         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 11: Peripherals / SCSI / NIC ====
+    dw interrupt_handler_43         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 12: PS2 Mouse ====
+    dw interrupt_handler_44         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 13: FPU / Coprocessor / Inter-processor ====
+    dw interrupt_handler_45         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 14: Primary ATA Hard Disk ====
+    dw interrupt_handler_46         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
+    ;                   ==== IRQ 15: Secondary ATA Hard Disk ====
+    dw interrupt_handler_47         ; Least significant double word for the address of the ISR
+    dw 0000000000001000b            ; Segment selector. Uses first GDT entry and highest privileges.
+    db 0x0                          ; Reserved. Set to 0 then.
+    db 10001110b                    ; (1, DPL, 0, Gate type)
+    dw 0x0                          ; Most significant double word for the address of the ISR
+
 ; No more IDT entries after this label
 idt_end:
 
@@ -262,6 +449,26 @@ interrupt_handler_T0 28
 interrupt_handler_T0 29
 interrupt_handler_T1 30
 interrupt_handler_T0 31
+
+; Master PIC IRQ interrupt handlers
+interrupt_handler_T0 32
+interrupt_handler_T0 33
+interrupt_handler_T0 34
+interrupt_handler_T0 35
+interrupt_handler_T0 36
+interrupt_handler_T0 37
+interrupt_handler_T0 38
+interrupt_handler_T0 39
+
+; Slave PIC IRQ interrupt handlers
+interrupt_handler_T0 40
+interrupt_handler_T0 41
+interrupt_handler_T0 42
+interrupt_handler_T0 43
+interrupt_handler_T0 44
+interrupt_handler_T0 45
+interrupt_handler_T0 46
+interrupt_handler_T0 47
 
 ; Generic interrupt handler. 
 ; Passes control and parameters to the kernel.

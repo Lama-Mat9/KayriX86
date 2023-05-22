@@ -25,7 +25,7 @@ mkdir $SCRIPT_DIR/build/c_objects/
 cd $SCRIPT_DIR/build/c_objects/
 
 #	---- Building the new Kernel ----
-$C_COMPILER -ffreestanding -fno-pie -m32 -nostdlib -c $(find $SCRIPT_DIR/src/ -type f -iname *.c -print) -Wall -Wextra
+$C_COMPILER -ffreestanding -fno-pie -m32 -nostdlib -I $SCRIPT_DIR/src/ -c $(find $SCRIPT_DIR/src/ -type f -iname *.c -print) -Wall -Wextra
 	# -m32: Compile as 32 bit code. This can be quite complicated if you have a 64 bit compiler.
 	# -fno-pie: Don't make position independent code (our kernel will be loaded at a precise address in memory that linker knows)
 	# $(find [...] ): Recursively finds all .c files in our src directory

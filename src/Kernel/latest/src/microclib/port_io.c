@@ -54,3 +54,12 @@ void portIO_word_write(unsigned short int port, unsigned short int byte) {
                 : "a" (byte), "d" (port)        //byte -> AX, port -> DX
                 );                              //No clobbered registers.
 }
+
+void portIO_wait() {
+/*
+	Function to send empty byte to an unused port.
+	Useful for when a device needs time before being written to again.
+*/
+
+	portIO_byte_write(0x80, 0);	//Port 0x80: Manufacturing Diagnostics port. Not used.
+}

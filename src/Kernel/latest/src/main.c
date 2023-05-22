@@ -5,6 +5,7 @@
 
 #include "drivers/screen/vga.h"
 #include "drivers/serial/serial.h"
+#include "tools/PIC/pic.h"
 
 //Function defined and exported in assembly.
 extern void idt_load(void);
@@ -12,6 +13,11 @@ extern void idt_load(void);
 void kernel_main() {
 	//Clear the screen before printing anything
 	screen_clear();
+
+	//Initialises the master PIC to use INTs 32 -> 39,
+	//		and the slave PIC to use INTs 40 -> 47.
+	//IRQs still disabled for now though.
+	PIC_init(0x20, 0x28);
 
 	//Enables protected mode interrupts.
 	idt_load();

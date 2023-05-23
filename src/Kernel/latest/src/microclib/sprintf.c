@@ -53,7 +53,7 @@ int sprintf(char* buffer, const char* format, ...) {
                 case 'd':
                 case 'o':
                 case 'b':
-                case 'x': {       // int argument expected (base 10)
+                case 'x': {       // int argument expected (different bases)
 
                     //This case handles multiple possible bases at the same time
                     int base = flag_to_base(format[i]);

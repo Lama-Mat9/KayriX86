@@ -1,7 +1,3 @@
-//Need number of characters written as return value
-//Need return negative number if fails
-//Not counting \0 ofc
-
 #include <stdarg.h>
 #include <stdint.h>
 #include "microclib/std.h"
@@ -17,6 +13,8 @@ int sprintf(char* buffer, const char* format, ...) {
     Non-standard implementation of sprintf
     Each format specifier should be preceded by { and followed by }
     Returns null terminated formatted string
+
+    Supported format codes: d o b x c s
 */
 
     //Going to go state machine style

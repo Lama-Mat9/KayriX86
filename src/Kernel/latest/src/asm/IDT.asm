@@ -518,9 +518,7 @@ interrupt_handler:
 
     ; Free stack parameters (two doublewords)
     add esp, 8
-
-    jmp $   ; If we don't stop here, CPU will jump back to whatever has caused the interrupt,
-                    ; therefore triggering the interrupt again.
+    
 
     iret    ; Returns using iret, so that the macros don't have to handle a return
             ; because it will directly jump back to the code that generated the interrupt.

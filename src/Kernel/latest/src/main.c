@@ -5,7 +5,8 @@
 
 #include "drivers/screen/vga.h"
 #include "drivers/serial/serial.h"
-#include "tools/PIC/pic.h"
+#include "drivers/PIC/pic.h"
+#include "microclib/sprintf.h"
 
 //Function defined and exported in assembly.
 extern void idt_load(void);

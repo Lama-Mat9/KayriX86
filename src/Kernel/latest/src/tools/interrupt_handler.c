@@ -31,4 +31,5 @@ void kernel_interrupt_handler(cpu_registers cpu, interrupt_info interrupt_inform
 
     print("Kernel received interrupt ");
     print_int(interrupt_information.interrupt_number, 10);
+    print("\n");
 }

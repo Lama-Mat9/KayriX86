@@ -16,7 +16,15 @@ echo "Using file: $BUILT_FILE"
 # Add whatever qemu command variation you have to this if statement so that it picks it
 if command -v qemu-virgil	#If qemu-virgil works (snap store)
 then
-	qemu-virgil -drive file=$SCRIPT_DIR//build/$BUILT_FILE,format=raw	#Run it
+
+	#Separating script prints with the OS's serial console prints by printing a string
+	for ((i=0;i<$(tput cols);i++))	#For each rows
+	do
+		echo -n "="	#Print "=" per column in one row, no newline
+	done
+
+	qemu-virgil -serial stdio -drive file=$SCRIPT_DIR//build/$BUILT_FILE,format=raw	#Run it. 
+			#Serial console mapped to stdio.
 else
 	echo -e "${RED}No x86 emulator found. Add yours to this script's list if necessary${NC}"
 fi

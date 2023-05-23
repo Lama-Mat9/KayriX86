@@ -6,6 +6,7 @@
 #include "microclib/std.h"
 #include "microclib/port_io.h"
 #include "microclib/memcpy.h"
+#include "microclib/get_digits.h"
 
 /*
 	Few patterns to note before reading the print functions:
@@ -28,14 +29,9 @@ void print_int(int32_t value, int base) {
 
 	//To determine the amount of space we need to store the number we
 	//have to determine how many digits are in the number.
-	int32_t valuecpy = value;
-	int digits = 0;
-	while (valuecpy != 0) {
-		valuecpy /= base;
-		digits += 1;
-	}
+	int digits = get_digits_signed(value, base);
 
-	//If the value is negative we need another bye for '-'
+	//If the value is negative we need another byte for '-'
 	if(value < 0) digits++;
 
 	//Allocate one byte more than the digits for \0
@@ -101,9 +97,11 @@ void print_char(char character, char attribute_byte, int row, int column) {
 		case '\n':	//The new line character
 			cursor_newLine();
 			return;	//Dont continue the function else it's gonna print the special char as ASCII
+
 		case '\f':	//The form feed character
 			cursor_formFeed();
 			return;
+
 		case '\r':	//The carriage return character
 			cursor_carriageReturn();
 			return;
@@ -132,7 +130,7 @@ void print_char(char character, char attribute_byte, int row, int column) {
 
 	//If we have just printed a character at the last column of the last row.
 	if(row == MAX_ROWS - 1 && column == MAX_COLUMNS - 1) {
-		screen_scroll();	//We scroll one line
+		cursor_newLine();	//We scroll one line
 	}
 	else {
 		//Else we move the cursor 2 bytes (1 character).
@@ -158,9 +156,6 @@ void screen_scroll() {
 		last_row[i] = 0;
 		last_row[i + 1] = VGA_COLOR_DEFAULT;	//Fill the attribute byte of each character with the default value
 	}						//as the cursor will use that value for it's color when it's there.
-
-	//Then we need to put the cursor back at the start of the same row.
-	cursor_carriageReturn();
 }
 
 void screen_clear() {
@@ -188,8 +183,19 @@ void cursor_formFeed() {
 /*
 	Function that moves the cursor to it's current X position but on the next line.
 */
-	//Simply adding twice the amount of characters of one line will do the job
-	set_cursor_offset(get_cursor_offset() + MAX_COLUMNS * 2);
+
+	//Create a column / row buffer to fill with cursor coordinates
+	int cursor_coordinates[2] = {0};
+	int cursor_offset = get_cursor_offset();
+	
+	//Fill this buffer with the cursor's column / row coordinates
+	get_screen_coordinates(cursor_offset, cursor_coordinates);
+	
+	//If we are on the last row, about to enter a row out of the screen, scrolling 1 row is enough.
+	if (cursor_coordinates[1] == MAX_ROWS - 1) screen_scroll();
+	else set_cursor_offset(cursor_offset + MAX_COLUMNS * 2);
+	//Adding twice the amount of characters of one line works.
+	
 }
 
 void cursor_carriageReturn() {
@@ -317,7 +323,7 @@ int get_screen_offset(int row, int column) {
 
 void get_screen_coordinates(int offset, int coordinates[2]) {
 /*
-	Function that converts a byte offset relative to the video address into row / column coordinates.
+	Function that converts a byte offset relative to the video address into column / row coordinates.
 	This of course is made for the GPU's tty mode.
 
 	The coordinates parameter is there because we need to return two values (X and Y)

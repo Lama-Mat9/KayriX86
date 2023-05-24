@@ -34,4 +34,8 @@ void kernel_main() {
 	print("Initialised serial ports: ");
 	print_int(serial_init(), 10);
 	print("\n");
+
+	/*char buf[100];
+	sprintf(buf, "This is sprintf {{c}}", 'a');
+	print(buf);*/
 }

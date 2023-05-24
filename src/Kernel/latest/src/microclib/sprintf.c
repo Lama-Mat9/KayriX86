@@ -12,9 +12,17 @@ int sprintf(char* buffer, const char* format, ...) {
 /*
     Non-standard implementation of sprintf
     Each format specifier should be preceded by { and followed by }
+    Example format string: "There are {d} dragons."
+
+    Format has to be a null terminated string.
     Returns null terminated formatted string
 
     Supported format codes: d o b x c s
+    All of the supported format codes work the same way as standard ANSI C
+
+    Entering escape brackets inside of escape brackets will print only the internal escape brackets
+    Example format string: "Hello {{}}"
+    Gets formatted to: "Hello {}"
 */
 
     //Going to go state machine style
@@ -35,15 +43,27 @@ int sprintf(char* buffer, const char* format, ...) {
         // ---- STATE MACHINE MANAGEMENT ----
 
         switch (format[i]) {
-        case '{':
-            parse_mode = FORMAT_SPECIFIER;  //Makes it so that next char read will
-                                            //be expected to be a format specifier
-            continue;                        
-    
-        case '}':
-            parse_mode = NORMAL;    //Next char will be expected to be a printable char again
+            case '{':
+
+                //If we are already in escaped mode and find a open escape mode character,
+                //prevent skip printing it
+                if(parse_mode == FORMAT_SPECIFIER) break;
+
+                //Next character will be interpreted as format specifier
+                parse_mode = FORMAT_SPECIFIER;
+
+                continue;        
             
-            continue;
+            case '}':
+
+                //If we aren't in escaped mode and find and find the close escaped mode character
+                //prevent skip printing it
+                if(parse_mode == NORMAL) break;
+                
+                //Next char will be expected to be a printable char again
+                parse_mode = NORMAL;    
+                
+                continue;
         }
         
         // ---- PARSING ----
@@ -107,6 +127,14 @@ int sprintf(char* buffer, const char* format, ...) {
 
                     break;
                 }
+                default: {  //Format character not understood
+
+                    //We print it
+                    buffer[buffer_index] = format[i];
+                    buffer_index++;
+
+                    break;   
+                }
             }
             
             
@@ -121,13 +149,8 @@ int sprintf(char* buffer, const char* format, ...) {
     //Cleanup the arguments
     va_end(arguments);
 
-    //In case the format string wasnt null terminated, means our formatted string is not either. 
-    if (format[strlen(format)] != '\0') {
-        buffer[buffer_index] = '\0';
-    }
-    else {  //If it was null terminated
-        buffer_index--;     // \0 does not count in the amount of characters written.
-    }
+    // \0 was copied from format string too.
+    buffer_index--;     // \0 does not count in the amount of characters written.
     
     //The buffer index also corresponds to how many characters we have written
     return buffer_index;

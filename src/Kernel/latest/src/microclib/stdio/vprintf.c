@@ -31,5 +31,10 @@ int vprintf(const char* format, va_list arguments) {
         VGA_print_char(buffer[i]);
     }
 
+    //We have written more data than what was allocated
+    if (return_value != buffer_size) {
+        return -1;
+    }
+
     return return_value;
 }

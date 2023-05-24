@@ -38,7 +38,7 @@ void VGA_print_cchar_at(char character, uint8_t fg_color, uint8_t bg_color, int 
 	Providing a valid row and column is also required.
 */
 	//Security checks to ensure that we are writing inside of the screen
-	if(row >= MAX_ROWS || column >= MAX_COLUMNS || row < 0 || column < 0) return;
+	if(row >= VGA_MAX_ROWS || column >= VGA_MAX_COLUMNS || row < 0 || column < 0) return;
 	
 	//Convert the bg and fg colors to usable attribute byte
 	char attribute_byte = form_attribute_byte(bg_color, fg_color);
@@ -69,7 +69,7 @@ void VGA_print_cchar_at(char character, uint8_t fg_color, uint8_t bg_color, int 
 	video_memory[offset + 1] = attribute_byte;
 
 	//If we have just printed a character at the last column of the last row.
-	if(row == MAX_ROWS - 1 && column == MAX_COLUMNS - 1) {
+	if(row == VGA_MAX_ROWS - 1 && column == VGA_MAX_COLUMNS - 1) {
 		cursor_newLine();	//We scroll one line
 	}
 	else {
@@ -111,14 +111,14 @@ void screen_scroll() {
 	This is useful when the cursor reaches the end of the screen for example.
 */
 	//We need to copy all rows except the first one. We will copy these up 1 row.
-	memcpy((char*) VIDEO_ADDRESS + get_screen_offset(1, 0), (char*) VIDEO_ADDRESS, (MAX_ROWS-1) * 2 * MAX_COLUMNS);
+	memcpy((char*) VIDEO_ADDRESS + get_screen_offset(1, 0), (char*) VIDEO_ADDRESS, (VGA_MAX_ROWS-1) * 2 * VGA_MAX_COLUMNS);
 		//From end of first row in memory	To first row	Copying all of the screen minus one row.
 
 	//Once we've done that we need to cleanup the last row so that it can be used.
-	char* last_row = (char*) VIDEO_ADDRESS + get_screen_offset(MAX_ROWS - 1, 0);	//Get the address of the last row.
+	char* last_row = (char*) VIDEO_ADDRESS + get_screen_offset(VGA_MAX_ROWS - 1, 0);	//Get the address of the last row.
 
 	//Fill the whole row with nothingness.
-	for(int i = 0; i < MAX_COLUMNS * 2; i += 2) {
+	for(int i = 0; i < VGA_MAX_COLUMNS * 2; i += 2) {
 		last_row[i] = 0;
 		last_row[i + 1] = VGA_COLOR_DEFAULT;	//Fill the attribute byte of each character with the default value
 	}						//as the cursor will use that value for it's color when it's there.
@@ -132,7 +132,7 @@ void screen_clear() {
 	char* video_memory = (char*) VIDEO_ADDRESS;
 
 	//Holds the last byte that we want to erase.
-	char* lastByte = (char*) VIDEO_ADDRESS + get_screen_offset(MAX_ROWS - 1, MAX_COLUMNS - 1);
+	char* lastByte = (char*) VIDEO_ADDRESS + get_screen_offset(VGA_MAX_ROWS - 1, VGA_MAX_COLUMNS - 1);
 
 	//While the current byte is not the last one
 	while(video_memory <= lastByte) {
@@ -158,8 +158,8 @@ void cursor_formFeed() {
 	get_screen_coordinates(cursor_offset, cursor_coordinates);
 	
 	//If we are on the last row, about to enter a row out of the screen, scrolling 1 row is enough.
-	if (cursor_coordinates[1] == MAX_ROWS - 1) screen_scroll();
-	else set_cursor_offset(cursor_offset + MAX_COLUMNS * 2);
+	if (cursor_coordinates[1] == VGA_MAX_ROWS - 1) screen_scroll();
+	else set_cursor_offset(cursor_offset + VGA_MAX_COLUMNS * 2);
 	//Adding twice the amount of characters of one line works.
 	
 }
@@ -172,7 +172,7 @@ void cursor_carriageReturn() {
 
 	//We calculate how many characters there are from the start of the current line,
 	//and substract them from the offset address.
-	set_cursor_offset(offset - offset % (MAX_COLUMNS * 2));
+	set_cursor_offset(offset - offset % (VGA_MAX_COLUMNS * 2));
 }
 
 void cursor_newLine() {
@@ -279,10 +279,10 @@ int get_screen_offset(int row, int column) {
 	Multiply all of that by the amount of rows we want to go down and you are done for the rows.
 
 	For the columns, simply multiply the amount of columns we want to skip by two and you are done.
-	-> offset = 2 * row * MAX_COLUMNS + 2 * column
+	-> offset = 2 * row * VGA_MAX_COLUMNS + 2 * column
 */
 	//Read the explanation to know how i found this.
-	int offset = 2 * row * MAX_COLUMNS + 2 * column;
+	int offset = 2 * row * VGA_MAX_COLUMNS + 2 * column;
 
 	return offset;
 }
@@ -299,9 +299,9 @@ void get_screen_coordinates(int offset, int coordinates[2]) {
 	offset /= 2; //Converting 2 bytes to 1 char by dividing the result by two
 
 	//The X coordinate of the offset address is what's left of the offset after it's at the correct row.
-	coordinates[0] = offset % MAX_COLUMNS;
+	coordinates[0] = offset % VGA_MAX_COLUMNS;
 
-	coordinates[1] = (offset - coordinates[0]) / MAX_COLUMNS;
+	coordinates[1] = (offset - coordinates[0]) / VGA_MAX_COLUMNS;
 }
 
 uint8_t form_attribute_byte(uint8_t bg_color, uint8_t fg_color) {

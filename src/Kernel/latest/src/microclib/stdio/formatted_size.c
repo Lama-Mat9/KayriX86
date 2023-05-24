@@ -28,6 +28,8 @@ int formatted_size(const char* format, va_list arguments) {
 
                 //If we were already in format specifier mode when encountered it it will get printed
                 if (parse_mode == FORMAT_SPECIFIER) buffer_size += 1;
+
+                parse_mode = FORMAT_SPECIFIER;
                 
                 //If we were not in format specifier mode when encountered it it wont get printed
 
@@ -37,6 +39,8 @@ int formatted_size(const char* format, va_list arguments) {
                 //If we are not in format specifier mode it will get printed
                 if (parse_mode == NORMAL) buffer_size += 1;
 
+                parse_mode = NORMAL;
+                
                 //If we were in format specifier mode it won't get printed
 
                 continue;

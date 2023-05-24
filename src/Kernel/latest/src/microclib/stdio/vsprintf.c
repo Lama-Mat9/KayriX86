@@ -5,6 +5,7 @@
 #include "microclib/memcpy.h"
 #include "microclib/stdio/flag_to_base.h"
 
+
 enum ParseMode { NORMAL, FORMAT_SPECIFIER };
 
 int vsprintf(char* buffer, const char* format, va_list arguments) {

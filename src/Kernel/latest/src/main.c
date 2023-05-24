@@ -30,10 +30,4 @@ void kernel_main() {
 	//Our driver will try to initialise multiple COM ports. 
 	//Initialise and print how many were successfully initialised.
 	printf("Initialised serial ports: {d}\n", serial_init());
-
-	/*char welcomeString[] = { '[', 0x07, 'K', 0x07, 'a', 0x07, 'y', 0x07, 'r', 0x07, 'i', 0x07, 'X', 0x07,
- 				'8', 0x07, '6', 0x07, ' ', 0x07, 'K', 0x09, 'e', 0x09, 'r', 0x09, 'n', 0x09,
-				'e', 0x09, 'l', 0x09, ']', 0x07, '\n'};
-
-	print_at_color(welcomeString, -1, -1);*/
 }

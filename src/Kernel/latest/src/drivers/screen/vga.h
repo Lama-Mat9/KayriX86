@@ -11,8 +11,8 @@
 //and interprets it as ASCII then writes it to the display.
 #define VIDEO_ADDRESS 0xb8000
 
-#define MAX_ROWS 25	//These won't actually change the display mode.
-#define MAX_COLUMNS 80	//Our bootsector program uses a bios routine to set this display mode by default.
+#define VGA_MAX_ROWS 25	//These won't actually change the display mode.
+#define VGA_MAX_COLUMNS 80	//Our bootsector program uses a bios routine to set this display mode by default.
 			//Our driver doesn't fetch these previously set values so they are hardcoded here :c
 
 //Color Graphics Adapter (CGA) port addresses (https://bochs.sourceforge.io/techspec/PORTS.LST)

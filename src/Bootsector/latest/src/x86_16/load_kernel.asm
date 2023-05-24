@@ -17,7 +17,7 @@ load_kernel:
     call newline
 
     ; ---- Fetching and copying the boot sector ----
-    mov al, 15              ; Load 15 sectors (Adjust with kernel code's size)
+    mov al, 30              ; Load 30 sectors (Adjust with kernel code's size)
     mov dl, [BOOT_DRIVE]    ; From the drive we just booted from
     mov dh, 0               ; Using head 0
     mov cl, 0x03            ; Starting from the first sector after the two sectors reserved for Bootsector

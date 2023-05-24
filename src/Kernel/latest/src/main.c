@@ -6,12 +6,13 @@
 #include "drivers/screen/vga.h"
 #include "drivers/serial/serial.h"
 #include "drivers/PIC/pic.h"
-#include "microclib/sprintf.h"
+#include "microclib/stdio/printf.h"
 
 //Function defined and exported in assembly.
 extern void idt_load(void);
 
 void kernel_main() {
+
 	//Clear the screen before printing anything
 	screen_clear();
 
@@ -24,18 +25,15 @@ void kernel_main() {
 	idt_load();
 
 	//	---- Welcome msg ----
-	char welcomeString[] = { '[', 0x07, 'K', 0x07, 'a', 0x07, 'y', 0x07, 'r', 0x07, 'i', 0x07, 'X', 0x07,
+	printf("[KayriX86 Kernel]\n");
+
+	//Our driver will try to initialise multiple COM ports. 
+	//Initialise and print how many were successfully initialised.
+	printf("Initialised serial ports: {d}\n", serial_init());
+
+	/*char welcomeString[] = { '[', 0x07, 'K', 0x07, 'a', 0x07, 'y', 0x07, 'r', 0x07, 'i', 0x07, 'X', 0x07,
  				'8', 0x07, '6', 0x07, ' ', 0x07, 'K', 0x09, 'e', 0x09, 'r', 0x09, 'n', 0x09,
 				'e', 0x09, 'l', 0x09, ']', 0x07, '\n'};
 
-	print_at_color(welcomeString, -1, -1);
-
-	//Our driver will try to initialise multiple COM ports. Print how many were successfully initialised.
-	print("Initialised serial ports: ");
-	print_int(serial_init(), 10);
-	print("\n");
-
-	/*char buf[100];
-	sprintf(buf, "This is sprintf {{c}}", 'a');
-	print(buf);*/
+	print_at_color(welcomeString, -1, -1);*/
 }

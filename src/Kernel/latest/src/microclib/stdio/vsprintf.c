@@ -3,14 +3,13 @@
 #include "microclib/std.h"
 #include "microclib/get_digits.h"
 #include "microclib/memcpy.h"
-
-static int flag_to_base(char format);
+#include "microclib/stdio/flag_to_base.h"
 
 enum ParseMode { NORMAL, FORMAT_SPECIFIER };
 
-int sprintf(char* buffer, const char* format, ...) {
+int vsprintf(char* buffer, const char* format, va_list arguments) {
 /*
-    Non-standard implementation of sprintf
+    Non-standard implementation of vsprintf
     Each format specifier should be preceded by { and followed by }
     Example format string: "There are {d} dragons."
 
@@ -23,22 +22,19 @@ int sprintf(char* buffer, const char* format, ...) {
     Entering escape brackets inside of escape brackets will print only the internal escape brackets
     Example format string: "Hello {{}}"
     Gets formatted to: "Hello {}"
+
+    Need to modify formatted_bufsize if we modify vsprintf's behavior.
+    This is because formatted_bufsize is guessing the buffer size required to use this function.
 */
 
     //Going to go state machine style
     enum ParseMode parse_mode = NORMAL;
 
-    //Keeps the arguments passed as parameters
-    va_list arguments;
-
     //Keeps our current position in the buffer
-    uint32_t buffer_index = 0;
-
-    //Required to let me start fetching the arguments
-    va_start(arguments, format);
+    int buffer_index = 0;
 
     //Go through the entire format string char per char
-    for (uint32_t i = 0; i <= strlen(format); i++) {
+    for (int i = 0; i <= (int) strlen(format); i++) {
         
         // ---- STATE MACHINE MANAGEMENT ----
 
@@ -118,7 +114,7 @@ int sprintf(char* buffer, const char* format, ...) {
                     char* argument = va_arg(arguments, char*);
 
                     //Get amount of chars to copy
-                    uint32_t argument_length = strlen(argument);
+                    int argument_length = strlen(argument);
 
                     //Copy all chars without null terminator
                     memcpy(argument, &(buffer[buffer_index]), argument_length); 
@@ -145,33 +141,10 @@ int sprintf(char* buffer, const char* format, ...) {
         }
             
     }
-    
-    //Cleanup the arguments
-    va_end(arguments);
 
     // \0 was copied from format string too.
     buffer_index--;     // \0 does not count in the amount of characters written.
-    
+
     //The buffer index also corresponds to how many characters we have written
     return buffer_index;
-}
-
-static int flag_to_base(char format) {
-/*
-    Returns base of formats d, x, o, b 
-*/
-
-    switch (format) {
-        case 'x':
-            return 16;
-        case 'd':
-            return 10;
-        case 'o':
-            return 8;
-        case 'b':
-            return 2;
-    }
-
-    //For security, but shouldnt be triggered.
-    return 10;
 }

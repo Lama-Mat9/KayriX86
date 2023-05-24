@@ -2,95 +2,46 @@
 	VGA color compatible screen driver implementation.
 */
 
-#include "vga.h" //For colors and things
-#include "microclib/std.h"
+#include "vga.h" 				//For colors and things
 #include "microclib/port_io.h"
 #include "microclib/memcpy.h"
-#include "microclib/get_digits.h"
 
 /*
 	Few patterns to note before reading the print functions:
-	Color attributes of 0x00 will be interpreted as default print color.
-	Negative row / column values will make the string be printed at current cursor position.
+		- I've called a "char" a character without it's attribute byte
+		- I've called a "cchar" a character with it's attribute byte (colored char).
 */
 
-uint8_t form_attribute_byte(uint8_t bg_color, uint8_t fg_color) {
-/*
-	Function that takes in a background and foreground color,
-	and returns the attribute byte for these colors.
-*/
-	return bg_color << 4 | fg_color;
-}
+//	---------------------------------------------------------------------------------------------------
 
-void print_int(int32_t value, int base) {
-/*
-	Function that prints an integer of any base.
-*/
+//Not exporting these functions outside of this file.
+//They could but shouldn't be used anywhere else if possible.
 
-	//To determine the amount of space we need to store the number we
-	//have to determine how many digits are in the number.
-	int digits = get_digits_signed(value, base);
+uint8_t form_attribute_byte(uint8_t bg_color, uint8_t fg_color);
+void get_screen_coordinates(int offset, int coordinates[2]);
+void screen_scroll();
+void cursor_formFeed();
+void cursor_carriageReturn();
+void cursor_newLine();
 
-	//If the value is negative we need another byte for '-'
-	if(value < 0) digits++;
+int get_cursor_offset();
+int get_screen_offset(int row, int column);
+void set_cursor_offset(int offset);
 
-	//Allocate one byte more than the digits for \0
-	char buffer[digits + 1];
+//	---------------------------------------------------------------------------------------------------
 
-	itoa(value, buffer, base);
-
-	print(buffer);
-}
-
-void print(char* string) {
-/*
-	Function that prints a string using the default color at the current cursor position.
-*/
-	print_at(string, -1, -1);
-}
-
-void print_at(char* string, int row, int column) {
-/*
-	Function that prints a string at the specified location using the default color.
-*/
-
-	//Keeps track of the character to be printed.
-        char* nextChar = string;
-
-        while(*nextChar != '\0') {
-                print_char(*nextChar, 0, row, column + nextChar - string);
-                nextChar++;  //Move forward 1 character.
-        }
-
-}
-
-void print_at_color(char* colored_string, int row, int column) {
-/*
-	Function that prints a "colored string" at a specified location.
-	The "colored string" must be a string where each character is followed by it's attribute byte.
-
-	Example of "colored string":
-	char test[] = {'t', 0x0e, 'e', 0x0f, 'a', 0x0a};	//You can see each character and it's attribute
-	char test2[] = "o\x0e";		//This one is an 'o' with 0x0e attribute
-*/
-
-	//Keeps track of the character to be printed.
-	char* nextChar = colored_string;
-
-	while(*nextChar != '\0') {
-		print_char(nextChar[0], nextChar[1], row, column + nextChar - colored_string);
-		nextChar += 2;	//Move forward 1 character and 1 attribute byte so 2 bytes.
-	}
-}
-
-void print_char(char character, char attribute_byte, int row, int column) {
+void VGA_print_cchar_at(char character, uint8_t fg_color, uint8_t bg_color, int row, int column) {
 /*
 	Function that prints one ASCII character using the GPU's tty mode.
-	You can optionally provide:
-		attribute_byte:		Standardized attributes used by GPUs in tty mode. (Default white on black).
-		column / row:		Specify at which position on the screen the character should be printed
-										(Default at cursor position)
+	Providing a color for the background and foreground is required.
+	Codes for these are in the .h file.
+	Providing a valid row and column is also required.
 */
+	//Security checks to ensure that we are writing inside of the screen
+	if(row >= MAX_ROWS || column >= MAX_COLUMNS || row < 0 || column < 0) return;
+	
+	//Convert the bg and fg colors to usable attribute byte
+	char attribute_byte = form_attribute_byte(bg_color, fg_color);
 
 	//		---- Special behaviors definition ----
 	switch (character) {
@@ -110,18 +61,7 @@ void print_char(char character, char attribute_byte, int row, int column) {
 	//We keep the start of video memory in a 1 byte pointer.
 	unsigned char* video_memory = (unsigned char*) VIDEO_ADDRESS;
 
-	//Default print color
-	if(!attribute_byte) attribute_byte = VGA_COLOR_DEFAULT;
-
-	//In case that we weren't provided coordinates, we retrieve the cursor's row and column to use these instead.
-	if(row < 0 || column < 0) {
-		int coordinates[2];
-		get_screen_coordinates(get_cursor_offset(), coordinates);
-		column = coordinates[0];	//X coordinates are the column
-		row = coordinates[1];		//Y coordinates are the row
-	}
-
-	//Then convert back the row / column coordinates to a memory offset
+	//Convert the row / column coordinates to a memory offset for writing
 	int offset = get_screen_offset(row, column);
 
 	//In the GPU's tty mode we can simply write ASCII chars to video memory followed by their attributes.
@@ -133,10 +73,36 @@ void print_char(char character, char attribute_byte, int row, int column) {
 		cursor_newLine();	//We scroll one line
 	}
 	else {
-		//Else we move the cursor 2 bytes (1 character).
+		//Otherwise we move the cursor 2 bytes (1 character).
 		offset += 2;
 		set_cursor_offset(offset);
 	}
+}
+
+void VGA_print_cchar(char character, uint8_t fg_color, uint8_t bg_color) {
+/*
+	Wrapper for VGA_print_cchar_at()
+	Writes the colored character at current cursor position.
+*/
+
+	//	---- Getting cursor coords ----
+	int coordinates[2] = {0};	// [column, row]
+	get_screen_coordinates(get_cursor_offset(), coordinates);
+
+	//	---- Wrapping function ----
+	VGA_print_cchar_at(character, fg_color, bg_color, coordinates[1], coordinates[0]);
+
+}
+
+void VGA_print_char(char character) {
+/*
+	Wrapper for VGA_print_cchar()
+	Writes the character with default color at cursor position.
+*/
+
+	//	---- Wrapping function ----
+	VGA_print_cchar(character, VGA_COLOR_DEFAULT, VGA_COLOR_BLACK);
+
 }
 
 void screen_scroll() {
@@ -336,4 +302,12 @@ void get_screen_coordinates(int offset, int coordinates[2]) {
 	coordinates[0] = offset % MAX_COLUMNS;
 
 	coordinates[1] = (offset - coordinates[0]) / MAX_COLUMNS;
+}
+
+uint8_t form_attribute_byte(uint8_t bg_color, uint8_t fg_color) {
+/*
+	Function that takes in a background and foreground color,
+	and returns the attribute byte for these colors.
+*/
+	return bg_color << 4 | fg_color;
 }

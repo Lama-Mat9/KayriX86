@@ -1,5 +1,5 @@
-#include "drivers/screen/vga.h"
 #include <stdint.h>
+#include "microclib/stdio/printf.h"
 
 //Local struct that is used to identify registers passed in order from asm generic handler to here.
 typedef struct cpu_registers {
@@ -29,7 +29,6 @@ typedef struct interrupt_info {
 //Generic asm interrupt handler passes control to this function, along with some parameters.
 void kernel_interrupt_handler(cpu_registers cpu, interrupt_info interrupt_information) {
 
-    print("Kernel received interrupt ");
-    print_int(interrupt_information.interrupt_number, 10);
-    print("\n");
+    printf("Kernel received interrupt {d}\n", interrupt_information.interrupt_number);
+
 }

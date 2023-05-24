@@ -3,9 +3,13 @@
 	Keep in mind that interrupts are currently disabled.
 */
 
+#include <stdint.h>
+#include <stdarg.h>
 #include "serial.h"
 #include "microclib/port_io.h"
-#include <stdint.h>
+
+#include "microclib/stdio/vsprintf.h"
+#include "microclib/stdio/formatted_size.h"
 
 int serial_init() {
 /*
@@ -106,8 +110,7 @@ int serial_init_port(uint16_t port) {
 	portIO_byte_write(port + 4, 0x03);	//0x03 = 00000011b
 
 	//Print a message in the serial console to make sure it initialised
-	char* msg = "Serial connection initialised\f\r";
-	serial_string_write(port, msg);
+	serial_printf(port, "Serial connection initialised at port 0x{x}\f\r", port);
 
 	return 0;
 }
@@ -164,14 +167,38 @@ void serial_byte_write(uint16_t port, uint8_t byte) {
 
 }
 
-void serial_string_write(uint16_t port, char* string) {
+void serial_printf(uint16_t port, const char* format, ...) {
 /*
-	Sends a string using the serial port.
+	Sends a formatted string using the serial port.
 */
 
+	//	---- Formatting string ----
+
+	//Lets us access each variadic argument
+	va_list arguments;
+
+	//Initialise arguments
+	va_start(arguments, format);
+
+	//Calculate required buffer size to store formatted string
+	int buffer_size = formatted_size(format, arguments);
+
+	//Allocate enough space for the formatted string
+	char buffer[buffer_size];
+
+	//Get the formatted string
+	vsprintf(buffer, format, arguments);
+
+	//Cleanup arguments
+	va_end(arguments);
+
+	//	---- Printing string ----
+
+	int offset = 0;	//Pointer to where we are in the string
+
 	//While the current char isnt the end of the string
-	while(*string != '\0') {
-		serial_byte_write(port, *string);	//We print the char
-		string += 1;	//Then continue to the next char
+	while(buffer[offset] != '\0') {
+		serial_byte_write(port, buffer[offset]);	//We print the char
+		offset += 1;	//Then continue to the next char
 	}
 }

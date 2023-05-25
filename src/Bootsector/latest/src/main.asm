@@ -30,6 +30,13 @@ main:
     mov [BOOT_DRIVE], dl    ; The BIOS should put our boot drive index in DL
                             ; We store now for later before someone erases it
 
+    xor ax, ax              ; Often, the address of the EBDA is stored at 0x040E, 
+    mov ah, 0xC1            ; and can also be accessed with int 12, AH=0xC1. However, it is not perfectly certain
+    int 0x15                ; that the address is at 0x040E. So we ensure that it is by writing the return value
+    mov [0x040e], es        ; of the interrupt over it. The kernel uses it later.
+    xor ax, ax
+    mov es, ax              ; Reset ES
+
     ; ---- Setup the display mode ----
     mov al, 0x03        ; 80 x 25 text tty. 16 Colors supported. SHOULD be 720x400 resolution but i'm not sure.
     mov ah, 0x0         ; "Set video mode" BIOS routine parameter
@@ -81,6 +88,7 @@ main:
     ; Quit real mode to use 32 bit protected mode.
     ; Execution will never come back from this jump.
     jmp switch_pm
+
 ; -----------------------------------------------------------------------------------------------------
 
 ; Global data defined here

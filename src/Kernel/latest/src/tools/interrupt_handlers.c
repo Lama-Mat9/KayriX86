@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include "microclib/stdio/printf.h"
 #include "drivers/PIC/pic.h"
+#include "microclib/port_io.h"
 
 
 //Local struct that is used to identify registers passed in order from asm generic handler to here.
@@ -30,16 +31,38 @@ typedef struct interrupt_info {
 
 void kernel_panic(cpu_registers cpu, interrupt_info interrupt_information);
 void print_info(cpu_registers cpu, interrupt_info interrupt_information);
+void handle_IRQ_1();
 
 //Generic asm interrupt handler passes control to this function, along with some parameters.
 void kernel_interrupt_handler(cpu_registers cpu, interrupt_info interrupt_information) {
+/*
+    Passes control to the appropriate interrupt handler depending on which interrupt is to handle.
+*/
 
-    //If any exeption is raised. Will need to handle some exeptions later
-    if (interrupt_information.interrupt_number < 32) kernel_panic(cpu, interrupt_information);
-    else {
+    //Exeptions. Will have to handle them correctly.
+    if (interrupt_information.interrupt_number < 32) { 
+        kernel_panic(cpu, interrupt_information);
+    }
+    else if (interrupt_information.interrupt_number == 33) {
+        handle_IRQ_1();
+    }
+    else {  //All unhandled interrupts
         printf("Kernel received interrupt {d}\n", interrupt_information.interrupt_number);
     }
     
+}
+
+void print_info(cpu_registers cpu, interrupt_info interrupt_information) {
+/*
+    Prints all of the structs information.
+*/
+    printf("EAX: {b}\nECX: {b}\nEDX: {b}\nEBX: {b}\nESP: {b}\nEBP: {b}\nESI: {b}\nEDI: {b}\n", cpu.eax, cpu.ecx, cpu.edx, cpu.ebx, cpu.esp, cpu.ebp, cpu.esi, cpu.edi);
+
+    printf("Interrupt number: {d}\n", interrupt_information.interrupt_number);
+    printf("Error code: {d}\n", interrupt_information.error_code);
+    printf("EIP: {x}\n", interrupt_information.eip);
+    printf("CS: {x}\n", interrupt_information.cs);
+    printf("EFLAGS: {b}\n", interrupt_information.eflags);
 }
 
 //  ---- REAL INTERRUPT HANDLERS ----
@@ -64,15 +87,19 @@ void kernel_panic(cpu_registers cpu, interrupt_info interrupt_information) {
     
 }
 
-void print_info(cpu_registers cpu, interrupt_info interrupt_information) {
-/*
-    Prints all of the structs information.
-*/
-    printf("EAX: {b}\nECX: {b}\nEDX: {b}\nEBX: {b}\nESP: {b}\nEBP: {b}\nESI: {b}\nEDI: {b}\n", cpu.eax, cpu.ecx, cpu.edx, cpu.ebx, cpu.esp, cpu.ebp, cpu.esi, cpu.edi);
+void handle_IRQ_1() {   //IRQ 1: Keyboard Interrupt
+    uint8_t scancode = portIO_byte_read(0x60);
+    
+    //printf("Keyboard sent {x}\n", scancode);
 
-    printf("Interrupt number: {d}\n", interrupt_information.interrupt_number);
-    printf("Error code: {d}\n", interrupt_information.error_code);
-    printf("EIP: {x}\n", interrupt_information.eip);
-    printf("CS: {x}\n", interrupt_information.cs);
-    printf("EFLAGS: {b}\n", interrupt_information.eflags);
+    //char* translationTable_u = "##1234567890#+\b#AZERTYUIOP####QSDFGHJKLM%###WXCVBN?./##*# #############789-456+1230.#";
+    
+    char* translationTable_l = "##&#\"'(-#_##)=\b#azertyuiop##\n#qsdfghjklm####wxcvbn,;:!#*# #############789-456+1230.#";
+    
+     //If bit 7 of the scancode is set, this is a "break code". Meaning that it indicates a key was released. 
+    if((scancode & 128) == 128);    //Do nothing
+    else {
+        printf("{c}", translationTable_l[scancode]);
+    }
+
 }

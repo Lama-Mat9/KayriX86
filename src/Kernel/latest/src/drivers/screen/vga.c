@@ -23,6 +23,7 @@ void screen_scroll();
 void cursor_formFeed();
 void cursor_carriageReturn();
 void cursor_newLine();
+void cursor_backspace();
 
 int get_cursor_offset();
 int get_screen_offset(int row, int column);
@@ -55,6 +56,10 @@ void VGA_print_cchar_at(char character, uint8_t fg_color, uint8_t bg_color, int 
 
 		case '\r':	//The carriage return character
 			cursor_carriageReturn();
+			return;
+
+		case '\b':	//The backspace character
+			cursor_backspace();
 			return;
 	}
 
@@ -183,6 +188,35 @@ void cursor_newLine() {
 	cursor_carriageReturn();
 }
 
+void cursor_backspace() {
+/*
+	Function that sets the cursor one position backwards and removes the character at that position.
+*/
+
+	//Get the cursor's current position
+	int offset = get_cursor_offset();
+
+	//Can't use backspace if you don't have any char to delete
+	if (offset < 2) return;
+
+	//Finding the last non zero character before the cursor (what we want to erase)
+	char* character = (char*) offset;
+	while(*(character + VIDEO_ADDRESS) == 0) character -= 2;	//Move back two chars until we find non zero char
+	
+	//Allocating memory to store column / row coords of this character
+	int coordinates[2] = {0};
+
+	//Filling the coordinates with the position of the position of the char to erase
+	get_screen_coordinates((int)character, coordinates);
+
+	//Deleting the char that is before the cursor
+	VGA_print_cchar_at(0, VGA_COLOR_DEFAULT, VGA_COLOR_BLACK, coordinates[1], coordinates[0]);
+	
+	//Set the cursor to the position that we've just freed
+	set_cursor_offset((int)character);
+
+}
+
 int get_cursor_offset() {
 /*
 	Function that returns the memory offset of the current cursor position
@@ -243,6 +277,9 @@ void set_cursor_offset(int offset) {
 	You may find useful information by reading it.
 */
 
+	//Offset cannot be negative 
+	if (offset < 0) offset = 0;
+
 	//The VGA hardware uses offsets in number of characters, not in bytes.
 	//The offset we are given is in bytes, therefore we have to divide it by 2
 	//because a single character is two bytes in the GPU's tty mode (character byte, attribute byte).
@@ -255,16 +292,16 @@ void set_cursor_offset(int offset) {
 	unsigned char higher_byte = (offset & 0xFF00) >> 8;
 
 	//Specify as index value that we want to access the higher byte of the cursor's location.
-        portIO_byte_write(CGA_REGISTER_CTRL, 0x0E);
+    portIO_byte_write(CGA_REGISTER_CTRL, 0x0E);
 
 	//Set the higher byte of the cursor position to the offset's higher byte.
 	portIO_byte_write(CGA_REGISTER_DATA, higher_byte);
 
 	//Specify as index value that we want to access the lower byte of the cursor's location.
-        portIO_byte_write(CGA_REGISTER_CTRL, 0x0F);
+    portIO_byte_write(CGA_REGISTER_CTRL, 0x0F);
 
 	//Set the lower byte of the cursor position to the offset's lower byte.
-        portIO_byte_write(CGA_REGISTER_DATA, lower_byte);
+    portIO_byte_write(CGA_REGISTER_DATA, lower_byte);
 }
 
 int get_screen_offset(int row, int column) {

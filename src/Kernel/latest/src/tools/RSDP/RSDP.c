@@ -4,14 +4,16 @@
 
 #include <stdint.h>
 #include "tools/EBDA/EBDA.h"
+#include "tools/RSDP/RSDP.h"
 #include "microclib/memcmp.h"
 #include "microclib/memcpy.h"
 
-//This list of functions is incomplete, as the RSDP contains more fields, but we do not need the rest for now.
+//Available everywhere.
+struct RSDPDescriptor* RSDP;
 
-char* RSDP_getAddress() {
+int RSDP_init() {
 /*
-    Tries to find the address of the RSDP, then returns it.
+    Fills the global structure with the RSDP.
 
     Returns -1 if not found
 */
@@ -25,19 +27,20 @@ char* RSDP_getAddress() {
 
     for (size_t i = 0; &(ebda_ptr[i]) < limit; i += 8) {
         if(memcmp(&(ebda_ptr[i]), rsd_ptr, 8) == 0)
-            return &(ebda_ptr[i]);
+            RSDP = (struct RSDPDescriptor*) &(ebda_ptr[i]);     // Set the struct pointer to the RSDP's address
     }
 
     //Second try: Between 0x000E0000 and 0x000FFFFF (the main BIOS area below 1 MB)
     char* start = (char*) 0x000E0000;
-    limit = (char*) 0x000FFFFF;
+    limit = 0x000FFFFF;
 
     for (size_t i = 0; &(start[i]) < limit; i += 8) {
         if(memcmp(&(start[i]), rsd_ptr, 8) == 0)
-            return &(start[i]);
+            RSDP = (struct RSDPDescriptor*) &(start[i]);    // Set the struct pointer to the RSDP's address
     }
     
-    return (char*) -1;
+    //Not found
+    return -1;
 }
 
 uint8_t RSDP_getACPIRevision() {
@@ -50,22 +53,14 @@ uint8_t RSDP_getACPIRevision() {
     Returns -1 on failure
 */
 
-    //Need start address of rsdp structure
-    char* rsdp_addr = RSDP_getAddress();
-
-    //Error handling
-    if((int) rsdp_addr == -1) return -1;
-
-    //Revision is always 7 bytes after base address no matter the version
-    uint8_t revision = *(rsdp_addr + 7);
-
     //Translate the codes to corresponding versions
-    if (revision == 0x20) return 2;
-    else if (revision == 0) return 1;
-    
+    if (RSDP->Revision == 2) return 2;
+    else if (RSDP->Revision == 0) return 1;
+
     //Error handling
     return -1;
 }
+
 char* RSDP_getOEMID() {
 /*
     Returns the OEMID field of the RSDP structure, with a null terminator.
@@ -74,20 +69,40 @@ char* RSDP_getOEMID() {
     Returns the buffer address on success.
 */
 
-    //Need start address of rsdp structure
-    char* rsdp_addr = RSDP_getAddress();
-
-    //Error handling
-    if((int) rsdp_addr == -1) return (char*) -1;
-
     //OEMID is always 9 bytes after base address no matter the version, and always 6 bytes long.
-    rsdp_addr += 9;
     static char OEMID_addr[7];
     
     //Setting the null terminator
     OEMID_addr[7] = 0;
 
-    memcpy(rsdp_addr, OEMID_addr, 6);
+    //Getting the OEMID from the struct.
+    memcpy(RSDP->OEMID, OEMID_addr, 6);
 
     return OEMID_addr;
+}
+
+int RSDP_isValid(struct RSDPDescriptor* RSDP_addr) {
+/*
+    Checks if the provided RSDP address is valid.
+
+    Returns 0 if the table is ok, anything else if it isn't.
+*/
+
+    //20 bytes to add
+
+    //If ACPI version is < 2
+    if (RSDP_addr->Revision == 0) {
+        
+        //Add all the bytes of the RSDP structure
+        uint32_t sum = 0;
+        for (int i = 0; i < 20; i++) {
+            sum += (int) ( *((char*) RSDP_addr + i));
+        }
+    
+        return sum;
+    }
+    
+    //If ACPI version is > 2
+
+    return -1;
 }

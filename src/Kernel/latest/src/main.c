@@ -34,7 +34,13 @@ void kernel_main() {
 	//Our driver will try to initialise multiple COM ports. 
 	//Initialise and print how many were successfully initialised.
 	printf("Initialised serial ports: {d}\n", serial_init());
-	printf("RSDP: 0x{x}\n", RSDP_getAddress());
+
+
+	//Fill the RSDT struct
+	RSDP_init();
+
+	printf("RSDP: 0x{x}\n", RSDP);
 	printf("ACPI revision: {d}.0\n", RSDP_getACPIRevision());
 	printf("OEM: {s}\n", RSDP_getOEMID());
+	printf("IsValid: {b}", RSDP_isValid(RSDP));
 }

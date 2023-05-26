@@ -9,34 +9,44 @@
 #include "microclib/memcpy.h"
 
 //Available everywhere.
-struct RSDPDescriptor* RSDP;
+struct RSDP* RootSDP;
+
+//Local prototypes
+int RSDP_isValid(struct RSDP* RSDP_addr);
 
 int RSDP_init() {
 /*
-    Fills the global structure with the RSDP.
+    Fills the global RSDP structure with the RSDP.
 
-    Returns -1 if not found
+    Returns -1 on error. Returns 0 if ok.
+
+    Requires a valid pointer to the EBDA.
 */
 
     //This is exactly like the string we have to find
     char* rsd_ptr = "RSD PTR ";
 
     //First try: Finding the string "RSD PTR " inside the first 1kb of the EBDA
-    char* ebda_ptr = EBDA_getAddress();
-    char* limit = ebda_ptr + 1000;
+    char* ebda_ptr = EBDA;
+    char* limit = (ebda_ptr + 1000);
 
-    for (size_t i = 0; &(ebda_ptr[i]) < limit; i += 8) {
-        if(memcmp(&(ebda_ptr[i]), rsd_ptr, 8) == 0)
-            RSDP = (struct RSDPDescriptor*) &(ebda_ptr[i]);     // Set the struct pointer to the RSDP's address
+    for (size_t i = 0; &(ebda_ptr[i]) < limit; i += 8) {    //Check each 8 bytes to see if they correspond to string
+        if(memcmp(&(ebda_ptr[i]), rsd_ptr, 8) == 0 && RSDP_isValid( (struct RSDP*) &(ebda_ptr[i]) )) {
+            RootSDP = (struct RSDP*) &(ebda_ptr[i]);     // Set the struct pointer to the RSDP's address
+            return 0;
+        }
+            
     }
 
     //Second try: Between 0x000E0000 and 0x000FFFFF (the main BIOS area below 1 MB)
     char* start = (char*) 0x000E0000;
-    limit = 0x000FFFFF;
+    limit = (char*) 0x000FFFFF;
 
-    for (size_t i = 0; &(start[i]) < limit; i += 8) {
-        if(memcmp(&(start[i]), rsd_ptr, 8) == 0)
-            RSDP = (struct RSDPDescriptor*) &(start[i]);    // Set the struct pointer to the RSDP's address
+    for (size_t i = 0; &(start[i]) < limit; i += 8) {   //Check each 8 bytes to see if they correspond to string
+        if(memcmp(&(start[i]), rsd_ptr, 8) == 0 && RSDP_isValid( (struct RSDP*) &(start[i]))) {
+            RootSDP = (struct RSDP*) &(start[i]);    // Set the struct pointer to the RSDP's address
+            return 0;
+        }
     }
     
     //Not found
@@ -54,8 +64,8 @@ uint8_t RSDP_getACPIRevision() {
 */
 
     //Translate the codes to corresponding versions
-    if (RSDP->Revision == 2) return 2;
-    else if (RSDP->Revision == 0) return 1;
+    if (RootSDP->Revision == 2) return 2;
+    else if (RootSDP->Revision == 0) return 1;
 
     //Error handling
     return -1;
@@ -76,33 +86,42 @@ char* RSDP_getOEMID() {
     OEMID_addr[7] = 0;
 
     //Getting the OEMID from the struct.
-    memcpy(RSDP->OEMID, OEMID_addr, 6);
+    memcpy(RootSDP->OEMID, OEMID_addr, 6);
 
     return OEMID_addr;
 }
 
-int RSDP_isValid(struct RSDPDescriptor* RSDP_addr) {
+int RSDP_isValid(struct RSDP* RSDP_addr) {
 /*
     Checks if the provided RSDP address is valid.
 
-    Returns 0 if the table is ok, anything else if it isn't.
+    Returns 1 if the table is valid, 0 otherwise.
 */
-
-    //20 bytes to add
-
-    //If ACPI version is < 2
-    if (RSDP_addr->Revision == 0) {
-        
-        //Add all the bytes of the RSDP structure
-        uint32_t sum = 0;
-        for (int i = 0; i < 20; i++) {
-            sum += (int) ( *((char*) RSDP_addr + i));
-        }
     
-        return sum;
+    //Add all the bytes of the ACPI 1.0 RSDP structure
+    uint32_t sum = 0;
+    for (int i = 0; i < 20; i++) {
+        sum += (uint32_t) *( (char*) RSDP_addr + i );
     }
-    
-    //If ACPI version is > 2
 
-    return -1;
+    //If the result's lowest byte is all zeros, RSDP (ACPI V1.0) is valid.
+    //Anything else and it isnt.
+    int acpiv1_isValid =  (sum & 255) == 0;
+
+    //If ACPI version < 2.0 that's all we need to check
+    if (RSDP_addr->Revision == 0) return acpiv1_isValid;
+    else if (acpiv1_isValid) {  //If ACPI version >= 2.0, we need to check the rest as well.
+
+        //Add all the bytes of the ACPI >= 2.0 RSDP structure
+        sum = 0;
+        for (int i = 20; i < 36; i++)
+            sum += (uint32_t) *( (char*) RSDP_addr + i );
+
+        //If the result''s lowest byte is all zeos, RSDP (ACPI V2.0) is valid.
+        //Anything else and it isnt.
+        return (sum & 255) == 0;
+    }       
+    
+
+    return 0;
 }

@@ -3,6 +3,9 @@
 #ifndef EBDA_H
 #define EBDA_H
 
-char* EBDA_getAddress();
+//Provide to all source files the local EBDA address
+extern char* EBDA;
+
+int EBDA_init();
 
 #endif

@@ -4,14 +4,17 @@
 
 #include <stdint.h>
 
-//Bootloader has put EBDA's address at this address. It's often here even by default
+//Bootloader has put EBDA's address at this address. It's often here even by default.
 #define EBDA_PTR_ADDRESS 0x040e
 
-char* EBDA_getAddress() {
-/*
-    Returns a pointer to the address of the EBDA.
+//Available everywhere
+char* EBDA;
 
-    Will return -1 on failure.
+int EBDA_init() {
+/*
+    Fills the global EBDA pointer with EBDA's address.
+
+    Returns -1 on failure. Returns 0 on success.
 */
 
     //Perform a 16 bit read of where the address of the EBDA is stored
@@ -22,6 +25,10 @@ char* EBDA_getAddress() {
     char* realAddress = (char*)((uint32_t) address << 4);
 
     //If the EBDA is not in that area it is a big indication that something is wrong
-    if (realAddress >= (char*)0x80000 && realAddress <= (char*)0x9ffff) return realAddress;
-    else return (char*)-1;
+    if (realAddress < (char*)0x80000 || realAddress > (char*)0x9ffff) return -1;
+    
+    //Set the global EBDA pointer to EBDA's address
+    EBDA = realAddress;
+    
+    return 0;
 }

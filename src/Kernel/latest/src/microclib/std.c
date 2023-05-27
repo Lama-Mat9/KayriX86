@@ -3,20 +3,22 @@
 */
 
 #include <stdbool.h>
+#include <stdint.h>
 #include "std.h"
 
-char* itoa(int value, char* string, int base) {
+static char* x64toa(uint64_t value, char* string, unsigned int base, unsigned int isNegative) {
 /*
-	Converts an integer value to a null-terminated string using the specified base,
+	Converts a 64bit unsigned integer value to a null-terminated string using the specified base,
 	then stores the result in the array given by string parameter.
+
+	As it only works on unsigned integers, if the number was negative you need to pass
+	that information in the parameters and provide the absolute value of your number.
 
 	Returns the same address as the given string parameter.
 */
-	//The index that we will use through this function to write to input string.
-	int index = 0;
 
-	//We will keep track of if the number was negative
-	bool isNegative = false;
+	//The index that we use to write to write to input string
+	int index = 0;
 
 	//Zero has to be handled explicitly.
 	//Else empty string would get printed.
@@ -26,31 +28,23 @@ char* itoa(int value, char* string, int base) {
 		return string;
 	}
 
-	//Like the real itoa(), negative numbers are handled only in base 10.
-	//Otherwise they are considered unsigned.
-	if(base == 10 && value < 0) {
-		value = value * -1;	//We have to do our calculations on a positive number
-		isNegative = true;		//We keep the fact that it was negative though
-	}
+	//Will store each digit that we extract from the value one by one.
+	int currentDigit = 0;
 
+	while (value != 0) {
+		currentDigit = (unsigned int) (value % base);	//Extract least significant digit
 
-	//Dividing each number by it's base gives us the least significant digit.
-	while(value != 0) {
-		int remainder = value % base; 	//Least significant digit
+		value /= base;					//Remove least significant digit from value
 
 		//Converting non numbers to letters by adding their offset in the ASCII table to ASCII 'a'
-		if(remainder > 9) string[index] = 'a' + (remainder - 10);
-		else string[index] = '0' + remainder;	//Converting integers to ASCII numbers by adding ASCII 0
+		if(currentDigit > 9) string[index] = 'a' + (currentDigit - 10);
+		else string[index] = '0' + currentDigit;	//Converting integers to ASCII numbers by adding ASCII 0
 
 		index += 1;
-		value = value / base;	//We do that so that next iteration gets the next least significant digit.
 	}
-
-
-
-	//Mark that the number was negative if it was.
-	//We put it at the end because the array will get flipped
-	if (isNegative) {
+	
+	//If it was negative we end the string with a '-'
+	if(isNegative){
 		string[index] = '-';
 		index += 1;
 	}
@@ -58,10 +52,33 @@ char* itoa(int value, char* string, int base) {
 	//Need to add string terminator because we've made the string ourselves.
 	string[index] = '\0';
 	index += 1;
-
-	//Reverse the string
+	
 	strrev(string);
 
+	return string;
+}
+
+//Signed 64bit
+char* i64toa(int64_t value, char* string, int base) {
+	x64toa((uint64_t) value, string, base, (base == 10 && value < 0));
+	return string;					//In the original itoa negative values are handled in base 10 only.
+}
+
+//Unsigned 64bit
+char* u64toa(uint64_t value, char* string, int base) {
+	x64toa(value, string, base, 0);
+	return string;
+}
+
+//Signed 32bit
+char* itoa(int32_t value, char* string, int base) {
+	x64toa((uint64_t) value, string, base, (base == 10 && value < 0));
+	return string;					//In the original itoa negative values are handled in base 10 only.
+}
+
+//Unsigned 64bit
+char* utoa(uint32_t value, char* string, int base) {
+	x64toa((uint64_t) value, string, base, 0);
 	return string;
 }
 

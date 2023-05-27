@@ -45,7 +45,8 @@ void kernel_main() {
 	FADT_init();	//Fill the FADT struct
 
 	printf("EBDA: 0x{x}\n", EBDA);
-	printf("RSDP: 0x{x}\n -> ACPI revision: {d}.0\n -> OEM: {s}\n", RootSDP, RSDP_getACPIRevision(), RSDP_getOEMID());
-	printf("RSDT: 0x{x}\n", RootSDT);
-	printf("FADT: {x}\n", FixedADT);
+	printf("RSDP: 0x{x.u32}\n -> ACPI revision: {d}.0\n -> OEM: {s}\n", RootSDP, RSDP_getACPIRevision(), RSDP_getOEMID());
+	printf("RSDT: 0x{x.u32}\n", RootSDT);
+	printf("FADT: 0x{x.u32}\n", FixedADT);
+
 }

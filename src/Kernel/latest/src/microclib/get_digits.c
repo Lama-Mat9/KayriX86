@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-int get_digits_signed(int32_t value, int base) {
+int get_digits_signed(int64_t value, int base) {
 /*
     Returns how many digits there are in a signed integer.
 */
@@ -18,7 +18,7 @@ int get_digits_signed(int32_t value, int base) {
     return digits;
 }
 
-int get_digits_unsigned(uint32_t value, int base) {
+int get_digits_unsigned(uint64_t value, int base) {
 /*
     Returns how many digits there are in an unsigned integer.
 */

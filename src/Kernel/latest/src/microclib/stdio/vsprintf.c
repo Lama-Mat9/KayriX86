@@ -3,7 +3,8 @@
 #include "microclib/std.h"
 #include "microclib/get_digits.h"
 #include "microclib/memcpy.h"
-#include "microclib/stdio/flag_to_base.h"
+#include "microclib/memcmp.h"
+#include "microclib/stdio/string_flags.h"
 
 
 enum ParseMode { NORMAL, FORMAT_SPECIFIER };
@@ -19,6 +20,9 @@ int vsprintf(char* buffer, const char* format, va_list arguments) {
 
     Supported format codes: d o b x c s
     All of the supported format codes work the same way as standard ANSI C
+
+    You can specify size and signedness by appending .u32 .u64 .i32 or .i64 to the format code
+    Example format string: "Unsigned 32 bit pointer here: {x.u32}"
 
     Entering escape brackets inside of escape brackets will print only the internal escape brackets
     Example format string: "Hello {{}}"
@@ -66,36 +70,68 @@ int vsprintf(char* buffer, const char* format, va_list arguments) {
         // ---- PARSING ----
 
         if (parse_mode == FORMAT_SPECIFIER) {   //Only parse format specifier after opening bracket
-            switch (format[i]) {
+            switch (format[i]) {        
                 case 'd':
                 case 'o':
                 case 'b':
-                case 'x': {       // int argument expected (different bases)
+                case 'x': {
+                    
+                    //If the size parameter is included
+                    if(format[i+1] == '.') {
+                        if (memcmp((char*) format + i + 2, "i32", 3) == 0) {           //int32
+                            int base = flag_to_base(format[i]); //Get the base corresponding to given flag
+                            int32_t argument = va_arg(arguments, int32_t);  //Get the arg to print (variadic)
+                            unsigned int digits = get_digits_signed(argument, base);    //Count the digits
+                            if(argument < 0) digits++;      //Could need one more space for '-'
+                            char tmp_buffer[digits + 1];    //Need one more space for '\0' 
+                            itoa(argument, tmp_buffer, base);   //Convert to char*
+                            memcpy(tmp_buffer, &(buffer[buffer_index]), digits);
+                            buffer_index += digits;
+                        }
+                        else if (memcmp((char*) format + i + 2, "i64", 3) == 0) {      //int64
+                            int base = flag_to_base(format[i]);
+                            int64_t argument = va_arg(arguments, int64_t);
+                            unsigned int digits = get_digits_signed(argument, base);
+                            if(argument < 0) digits++;
+                            char tmp_buffer[digits + 1];
+                            i64toa(argument, tmp_buffer, base);
+                            memcpy(tmp_buffer, &(buffer[buffer_index]), digits);
+                            buffer_index += digits;
+                        }
+                        else if (memcmp((char*) format + i + 2, "u32", 3) == 0) {      //uint32
+                            int base = flag_to_base(format[i]);
+                            uint32_t argument = 0;
+                            argument = va_arg(arguments, uint32_t);
+                            unsigned int digits = get_digits_unsigned(argument, base);
+                            char tmp_buffer[digits + 1];
+                            utoa(argument, tmp_buffer, base);
+                            memcpy(tmp_buffer, &(buffer[buffer_index]), digits);
+                            buffer_index += digits;
+                        }
+                        else if (memcmp((char*) format + i + 2, "u64", 3) == 0) {      //uint64
+                            int base = flag_to_base(format[i]);
+                            uint64_t argument = va_arg(arguments, uint64_t);
+                            unsigned int digits = get_digits_unsigned(argument, base);
+                            char tmp_buffer[digits + 1];
+                            u64toa(argument, tmp_buffer, base);
+                            memcpy(tmp_buffer, &(buffer[buffer_index]), digits);
+                            buffer_index += digits;
+                        }
 
-                    //This case handles multiple possible bases at the same time
-                    int base = flag_to_base(format[i]);
-
-                    //Getting the argument
-                    int32_t argument = va_arg(arguments, int32_t);
-
-                    //To determine the amount of space we need to store the number we
-                    //have to determine how many digits are in the number.
-                    int digits = get_digits_signed(argument, base);
-                    if(argument < 0) digits++;  //We need another char for '-' if negative
-
-                    //Allocate space to store the char* version of the number.
-                    //Add 1 more for \0
-                    char tmp_buffer[digits + 1];
-
-                    //Store the number inside of the temporary buffer
-                    itoa(argument, tmp_buffer, base);
-
-                    //Store the temporary buffer (without \0) at the end of the real buffer
-                    memcpy(tmp_buffer, &(buffer[buffer_index]), digits);
-
-                    //Update our write position in the buffer to prevent overwriting what we just wrote
-                    buffer_index += digits;
-
+                        i += 4;     //Skip all that we've read
+                        
+                    }
+                    else {  //The size parameter was not included. Assuming i32.
+                        int base = flag_to_base(format[i]);
+                        int32_t argument = va_arg(arguments, int32_t);
+                        unsigned int digits = get_digits_signed(argument, base);
+                        if(argument < 0) digits++;
+                        char tmp_buffer[digits + 1];
+                        itoa(argument, tmp_buffer, base);
+                        memcpy(tmp_buffer, &(buffer[buffer_index]), digits);
+                        buffer_index += digits;
+                    }
+                
                     break;
                 }
                 case 'c': {     //char argument expected

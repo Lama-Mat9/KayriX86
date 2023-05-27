@@ -11,7 +11,7 @@ GREEN='\033[0;32m'
 NC='\033[0m'
 
 #You need to build and use a cross compiler (so that it has no access to your current OS's standard libraries).
-#Using your current OS's build of these could work, but is unsafe.
+#Using your current OS's build of these could work, but is unsafe. (At least use -m32 if you need to use a 64bit compiler).
 C_COMPILER="i686-elf-gcc"
 LINKER="i686-elf-ld"
 
@@ -20,32 +20,29 @@ rm -r $SCRIPT_DIR/build/*
 
 RET_CODE=0
 
-#Go into specific dir just to make sure that output gets there (GCC doesn't wanna let me use -o)
-mkdir $SCRIPT_DIR/build/c_objects/
-cd $SCRIPT_DIR/build/c_objects/
-
-#	---- Building the new Kernel ----
-$C_COMPILER -ffreestanding -fno-pie -m32 -nostdlib -I $SCRIPT_DIR/src/ -c $(find $SCRIPT_DIR/src/ -type f -iname *.c -print) -Wall -Wextra
-	# -m32: Compile as 32 bit code. This can be quite complicated if you have a 64 bit compiler.
-	# -fno-pie: Don't make position independent code (our kernel will be loaded at a precise address in memory that linker knows)
-	# $(find [...] ): Recursively finds all .c files in our src directory
-	#-Wall -Wextra: Give as much warnings as possible. Could help debug.
-RET_CODE=$(($RET_CODE + $?))
-
 #ASM
 nasm $SCRIPT_DIR/src/entry_point.asm -f elf -o $SCRIPT_DIR/build/entry_point.o
 nasm $SCRIPT_DIR/src/asm/*.asm -f elf -o $SCRIPT_DIR/build/asm_objects.o
 RET_CODE=$(($RET_CODE + $?))
 
-#Linking them together in order (entry point has to be first)
-$LINKER -Ttext 0x1000 --oformat binary -m elf_i386 -o $SCRIPT_DIR/build/kernel.bin $SCRIPT_DIR/build/entry_point.o $SCRIPT_DIR/build/c_objects/*.o $SCRIPT_DIR/build/asm_objects.o
-	#-m elf_i386: Link 32 bit files.
-
-RET_CODE=$(($RET_CODE + $?))	# Get return code of linker command (linker will obviously fail if compiler failed anyways)
+#	---- Building the new Kernel ----
+$C_COMPILER -ffreestanding -fno-pie -Ttext 0x1000 -Wl,--oformat=binary -I $SCRIPT_DIR/src/ $SCRIPT_DIR/build/entry_point.o $SCRIPT_DIR/build/asm_objects.o $(find $SCRIPT_DIR/src/ -type f -iname *.c -print) -o $SCRIPT_DIR/build/Kernel.bin  -Wall -Wextra -nostdlib -lgcc 
+	# -freestanding: We are in a "freestanding environment". No libraries available or anything.
+	# -fno-pie: Don't make position independent code (our kernel will be loaded at a precise address in memory)
+	# -Ttext: Pass the address of where our code will be loaded in memory. The bootloader decides where that is.
+	# -Wl,--oformat=binary: -Wl allows to pass options to the linker (probably ld). We ask ld to not use elf format.
+	# -I: Defines the root of where the #includes directives should be relative to.
+	# nasm's .o files: We gotta gcc as linker because he is the only one who knows where it's libgcc is. Therefore GCC links nasm's files as well as compiling.
+	# $(find [...] ): Recursively finds all .c files in our src directory
+	# -Wall -Wextra: Give as much warnings as possible. Could help debug.
+	# -nostdlib: Disable automatic linking with libc and libgcc. We don't use libc because gcc's libc belongs to the OS we're running. However we want libgcc.
+	# -lgcc: Enable linking with gcc's libgcc, which is a major part of gcc. I have noticed for example that gcc requires it for 64 bit divisions (not 32 though).
+	#	-> -lgcc has to be put AFTER all the files that might use it in our compile command.
+	
+RET_CODE=$(($RET_CODE + $?))
 
 #Cleanup unnecessary files that emerged from the process
 rm $SCRIPT_DIR/build/*.o
-rm -r $SCRIPT_DIR/build/c_objects/
 
 #	---- Printing the result ----
 

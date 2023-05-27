@@ -13,6 +13,6 @@ struct ACPISDTHeader {
     uint32_t OEMRevision;
     uint32_t CreatorID;
     uint32_t CreatorRevision;
-} __attribute__ ((packed));
+};
 
 #endif

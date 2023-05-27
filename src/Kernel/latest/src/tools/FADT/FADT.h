@@ -71,7 +71,7 @@ struct FADT
     struct GenericAddressStructure X_PMTimerBlock;
     struct GenericAddressStructure X_GPE0Block;
     struct GenericAddressStructure X_GPE1Block;
-} __attribute__ ((packed));
+};
 
 //Provide to all source files the local FADT structure
 extern struct FADT* FixedADT;

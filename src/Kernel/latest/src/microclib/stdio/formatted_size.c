@@ -1,7 +1,8 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include "microclib/get_digits.h"
-#include "microclib/stdio/flag_to_base.h"
+#include "microclib/memcmp.h"
+#include "microclib/stdio/string_flags.h"
 #include "microclib/std.h"
 
 enum ParseMode { NORMAL, FORMAT_SPECIFIER };
@@ -53,19 +54,47 @@ int formatted_size(const char* format, va_list arguments) {
                 case 'b':
                 case 'x': {       // int argument expected (different bases)
 
-                    //This case handles multiple possible bases at the same time
-                    int base = flag_to_base(format[i]);
+                    //If the size parameter is included
+                    if(format[i+1] == '.') {
+                        if (memcmp((char*) format + i + 2, "i32", 3) == 0) {           //int32
+                            int base = flag_to_base(format[i]); //Get the base corresponding to given flag
+                            int32_t argument = va_arg(arguments_copy, int32_t);  //Get the arg to print (variadic)
+                            unsigned int digits = get_digits_signed(argument, base);    //Count the digits
+                            if(argument < 0) digits++;      //Could need one more space for '-'
+                            buffer_size += digits;
+                        }
+                        else if (memcmp((char*) format + i + 2, "i64", 3) == 0) {      //int64
+                            int base = flag_to_base(format[i]);
+                            int64_t argument = va_arg(arguments_copy, int64_t);
+                            unsigned int digits = get_digits_signed(argument, base);
+                            if(argument < 0) digits++;
+                            buffer_size += digits;
+                        }
+                        else if (memcmp((char*) format + i + 2, "u32", 3) == 0) {      //uint32
+                            int base = flag_to_base(format[i]);
+                            uint32_t argument = 0;
+                            argument = va_arg(arguments_copy, uint32_t);
+                            unsigned int digits = get_digits_unsigned(argument, base);
+                            buffer_size += digits;
+                        }
+                        else if (memcmp((char*) format + i + 2, "u64", 3) == 0) {      //uint64
+                            int base = flag_to_base(format[i]);
+                            uint64_t argument = va_arg(arguments_copy, uint64_t);
+                            unsigned int digits = get_digits_unsigned(argument, base);
+                            buffer_size += digits;
+                        }
 
-                    //Getting the argument
-                    int32_t argument = va_arg(arguments_copy, int32_t);
-
-                    //To determine the amount of space we need to store the number we
-                    //have to determine how many digits are in the number.
-                    int digits = get_digits_signed(argument, base);
-                    if(argument < 0) digits++;  //We need another char for '-' if negative
-
-                    buffer_size += digits;
-
+                        i += 4;     //Skip all that we've read
+                        
+                    }
+                    else {  //The size parameter was not included. Assuming i32.
+                        int base = flag_to_base(format[i]);
+                        int32_t argument = va_arg(arguments_copy, int32_t);
+                        unsigned int digits = get_digits_signed(argument, base);
+                        if(argument < 0) digits++;
+                        buffer_size += digits;
+                    }
+                
                     break;
                 }
                 case 'c': {     //char argument expected

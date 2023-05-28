@@ -50,6 +50,7 @@ int RSDP_init() {
     }
     
     //Not found
+    RootSDP = 0;
     return -1;
 }
 

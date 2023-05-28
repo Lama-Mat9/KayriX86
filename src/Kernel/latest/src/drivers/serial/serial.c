@@ -1,6 +1,5 @@
 /*
 	Serial port driver implementation
-	Keep in mind that interrupts are currently disabled.
 */
 
 #include <stdint.h>
@@ -10,6 +9,15 @@
 
 #include "microclib/stdio/vsprintf.h"
 #include "microclib/stdio/formatted_size.h"
+#include "drivers/PIC/pic.h"
+#include "microclib/memcmp.h"
+#include "microclib/std.h"
+
+#include "drivers/serial/commands/TABLES/TABLES.h"
+#include "drivers/serial/commands/PIC/PIC.h"
+
+//Internal prototypes
+void serial_handle_command(unsigned char* command, uint16_t port);
 
 int serial_init() {
 /*
@@ -25,9 +33,14 @@ int serial_init() {
 	//Keeps track of the return status of each init attempt
 	int status = 0;
 
-	//Keep the initialisation return codes and initialise standard port addresses.
-	status += serial_init_port(SERIAL_IOPORT1);
-	status += serial_init_port(SERIAL_IOPORT2);
+	//Enable interrupts for registers that are usable and keep return codes
+	int status_com1 = serial_init_port(SERIAL_IOPORT1);
+	if(status_com1 == 0) PIC_IRQ_enable(4);
+	else status += status_com1;
+
+	int status_com2 = serial_init_port(SERIAL_IOPORT2);
+	if(status_com2 == 0) PIC_IRQ_enable(3);
+	else status += status_com2;
 
 	//We keep the fact that we tried to initalise two ports
 	tried_ports += 2;
@@ -68,20 +81,20 @@ int serial_init_port(uint16_t port) {
 	Sets up the serial port given in params for transmission.
 */
 
-	//DLAB is 0 by default, so this is the "Interrupt Enable Register".
-	portIO_byte_write(port + 1, 0x00);	//Disable interrupts.
+	//DLAB is 0, so this is the "Interrupt Enable Register".
+	portIO_byte_write(port + 1, 0x00);	//Disable interrupts
 
 	//Most significant bit of the Line Control register is DLAB
 	portIO_byte_write(port + 3, 0x80); 	//Set DLAB to 1
 
 	//DLAB is now 1, so this is the least significant byte for the baud rate divisor.
-	portIO_byte_write(port + 0, 0x0c);	//115200 / 12 = 9600 baud rate
+	portIO_byte_write(port + 0, 0x0C);	//115200 / 12 = 9600 baud rate
 
 	//DLAB is 1, so this is the most significant byte for the baud rate divisor.
 	portIO_byte_write(port + 1, 0x00);	//0x00 + 0x0c = 0x0c
 
 	//Set DLAB back to 0 and select our options for the transfer
-	portIO_byte_write(port + 3, 0x03);	//0x02 = 00000010b
+	portIO_byte_write(port + 3, 0x03);	//0x03 = 00000011b
 		//Means no DLAB, no parity, one stop bit per char, 8bit data length
 		//I chose 8 bit length because the smallest data types we have in C is 8bit.
 		//Probably works in 7 bit for our use but never know.
@@ -89,26 +102,26 @@ int serial_init_port(uint16_t port) {
 	//Enable FIFO with a 14 byte threshold before data gets cleared.
 	portIO_byte_write(port + 2, 0xC7);	///0xC7 = 11000111b
 
-	//Handshaking. Requests for modem so send, sets ready, IRQ disabled
-	portIO_byte_write(port + 4, 0x03);	//0x0B = 00000011b
-
 	//Request to send following data in loopback mode
-	portIO_byte_write(port + 4, 0x1E);	//0x1E = 00011110b
+	portIO_byte_write(port + 4, 0x1B);	//0x1E = 00011110b
 		//We will simply send ourselves data to check if this works
 
 	//Fill the data register with some data to send
 	portIO_byte_write(port + 0, 0xFA);	//Randomly picked value
 
-
 	//Now we receive the data that we just sent ourselves, read it and check
 	//if the received value is same as the sent value to see if its working.
-	if(portIO_byte_read(port + 0) != 0xFA) {
-		return 1;
-	}
+	
+	if(portIO_byte_read(port + 0) != 0xFA) return 1;
 
 	//Then if it works correctly we remove loopback, set DTR and RTS.
-	portIO_byte_write(port + 4, 0x03);	//0x03 = 00000011b
+	//Set Auxiliary output 2 so that IRQs are enabled
+	portIO_byte_write(port + 4, 0x0B);	//0x0B = 00001011b
 
+	//DLAB set to 0, so this is Interrupt Enable Register
+	portIO_byte_write(port + 1, 0x01);	//We set it to fire interrupt when some data is available
+
+	
 	//Print a message in the serial console to make sure it initialised
 	serial_printf(port, "Serial connection initialised at port 0x{x}\f\r", port);
 
@@ -201,4 +214,65 @@ void serial_printf(uint16_t port, const char* format, ...) {
 		serial_byte_write(port, buffer[offset]);	//We print the char
 		offset += 1;	//Then continue to the next char
 	}
+}
+
+void serial_handle_interrupt(uint16_t port) {
+/*
+	Handler for when IRQ3 or IRQ4 is triggered.
+*/
+
+	//Holds the characters sent through serial between now and the last time enter key was pressed.
+	static unsigned char commandBuffer[201] = {0};	//All pure zeros
+									//Last char reserved for null terminator
+
+	//Read the byte that was sent to us
+	char readByte = serial_byte_read(port);
+
+	//Code for the "enter" key. Executes the command that was typed.
+	if (readByte == 13)	{
+
+		//New line
+		serial_printf(port, "\f\r");
+
+		//Do something with the command
+		serial_handle_command(commandBuffer, port);
+
+		//Flush the buffer
+		for(unsigned int i = 0; i < sizeof(commandBuffer); i++) commandBuffer[i] = 0;
+	}
+	else {	//Behavior for any other keys
+
+		//Print whatever was sent
+		serial_printf(port, "{c}", readByte);
+
+		//Find the last available space in the buffer and put received data inside of it
+		for (unsigned int i = 0; i < sizeof(commandBuffer) - 1; i++) {	//Cannot overwrite null terminator
+
+			if (commandBuffer[i] == 0) {		//We found an empty space
+				
+				commandBuffer[i] = readByte;	//Store the byte
+				break;							//Stop searching
+			}
+		}
+	}
+
+}
+
+void serial_handle_command(unsigned char* command, uint16_t port) {
+/*
+	Defines the behavior corresponding to each serial port command.
+
+	Command has to be a null terminated string.
+*/
+
+	if (memcmp(command, "TABLES", strlen("TABLES")) == 0) {
+		cmd_TABLES(port);
+	}
+	else if (memcmp(command, "PIC", strlen("PIC")) == 0) {
+		cmd_PIC(port);
+	} 		//Add commands here
+	else {
+		serial_printf(port, "Syntax error\f\r");
+	}
+	
 }

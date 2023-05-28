@@ -30,9 +30,6 @@ void kernel_main() {
 	//Enables protected mode interrupts.
 	idt_load();
 
-	//Enable PS2 keyboard interrupts
-	PIC_IRQ_enable(1);
-
 	//	---- Important drivers initialisation ----
 	//Our driver will try to initialise multiple COM ports. 
 	//Initialise and print how many were successfully initialised.
@@ -43,10 +40,4 @@ void kernel_main() {
 	RSDP_init();	//Fill the RSDP struct
 	RSDT_init();	//Fill the RSDT struct
 	FADT_init();	//Fill the FADT struct
-
-	printf("EBDA: 0x{x}\n", EBDA);
-	printf("RSDP: 0x{x.u32}\n -> ACPI revision: {d}.0\n -> OEM: {s}\n", RootSDP, RSDP_getACPIRevision(), RSDP_getOEMID());
-	printf("RSDT: 0x{x.u32}\n", RootSDT);
-	printf("FADT: 0x{x.u32}\n", FixedADT);
-
 }

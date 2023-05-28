@@ -25,7 +25,10 @@ int EBDA_init() {
     char* realAddress = (char*)((uint32_t) address << 4);
 
     //If the EBDA is not in that area it is a big indication that something is wrong
-    if (realAddress < (char*)0x80000 || realAddress > (char*)0x9ffff) return -1;
+    if (realAddress < (char*)0x80000 || realAddress > (char*)0x9ffff){
+        EBDA = 0;
+        return -1;
+    } 
     
     //Set the global EBDA pointer to EBDA's address
     EBDA = realAddress;

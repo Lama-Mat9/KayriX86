@@ -9,5 +9,6 @@ void PIC_IRQ_disable(int irq);
 void PIC_disableAll();
 uint16_t PIC_ReadIRR();
 uint16_t PIC_ReadISR();
+uint16_t PIC_getBitmask();
 
 #endif

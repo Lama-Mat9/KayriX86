@@ -2,6 +2,7 @@
 #include "microclib/stdio/printf.h"
 #include "drivers/PIC/pic.h"
 #include "microclib/port_io.h"
+#include "drivers/serial/serial.h"
 
 
 //Local struct that is used to identify registers passed in order from asm generic handler to here.
@@ -31,7 +32,7 @@ typedef struct interrupt_info {
 
 void kernel_panic(cpu_registers cpu, interrupt_info interrupt_information);
 void print_info(cpu_registers cpu, interrupt_info interrupt_information);
-void handle_IRQ_1();
+void handle_serial(uint32_t interrupt_number);
 
 //Generic asm interrupt handler passes control to this function, along with some parameters.
 void kernel_interrupt_handler(cpu_registers cpu, interrupt_info interrupt_information) {
@@ -43,8 +44,10 @@ void kernel_interrupt_handler(cpu_registers cpu, interrupt_info interrupt_inform
     if (interrupt_information.interrupt_number < 32) { 
         kernel_panic(cpu, interrupt_information);
     }
-    else if (interrupt_information.interrupt_number == 33) {
-        handle_IRQ_1();
+    else if (interrupt_information.interrupt_number == 35   //COM2
+        || interrupt_information.interrupt_number == 36) {  //COM1
+
+        handle_serial(interrupt_information.interrupt_number);
     }
     else {  //All unhandled interrupts
         printf("Kernel received interrupt {d}\n", interrupt_information.interrupt_number);
@@ -56,7 +59,8 @@ void print_info(cpu_registers cpu, interrupt_info interrupt_information) {
 /*
     Prints all of the structs information.
 */
-    printf("EAX: {b}\nECX: {b}\nEDX: {b}\nEBX: {b}\nESP: {b}\nEBP: {b}\nESI: {b}\nEDI: {b}\n", cpu.eax, cpu.ecx, cpu.edx, cpu.ebx, cpu.esp, cpu.ebp, cpu.esi, cpu.edi);
+    printf("EAX: {b}\nECX: {b}\nEDX: {b}\nEBX: {b}\nESP: {b}\nEBP: {b}\nESI: {b}\nEDI: {b}\n", 
+            cpu.eax, cpu.ecx, cpu.edx, cpu.ebx, cpu.esp, cpu.ebp, cpu.esi, cpu.edi);
 
     printf("Interrupt number: {d}\n", interrupt_information.interrupt_number);
     printf("Error code: {d}\n", interrupt_information.error_code);
@@ -87,19 +91,11 @@ void kernel_panic(cpu_registers cpu, interrupt_info interrupt_information) {
     
 }
 
-void handle_IRQ_1() {   //IRQ 1: Keyboard Interrupt
-    uint8_t scancode = portIO_byte_read(0x60);
-    
-    //printf("Keyboard sent {x}\n", scancode);
+void handle_serial(uint32_t interrupt_number) {
+/*
+    Passes control to the serial driver
+*/
 
-    //char* translationTable_u = "##1234567890#+\b#AZERTYUIOP####QSDFGHJKLM%###WXCVBN?./##*# #############789-456+1230.#";
-    
-    char* translationTable_l = "##&#\"'(-#_##)=\b#azertyuiop##\n#qsdfghjklm####wxcvbn,;:!#*# #############789-456+1230.#";
-    
-     //If bit 7 of the scancode is set, this is a "break code". Meaning that it indicates a key was released. 
-    if((scancode & 128) == 128);    //Do nothing
-    else {
-        printf("{c}", translationTable_l[scancode]);
-    }
-
+    if(interrupt_number == 36) serial_handle_interrupt(SERIAL_IOPORT1);
+    if(interrupt_number == 35) serial_handle_interrupt(SERIAL_IOPORT2);
 }

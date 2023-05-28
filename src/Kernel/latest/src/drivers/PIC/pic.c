@@ -123,6 +123,14 @@ void PIC_init(uint8_t masterOffset, uint8_t slaveOffset) {
 
 }
 
+uint16_t PIC_getBitmask() {
+/*
+	Returns both of the PICs bitmask combined.
+*/
+
+	return (uint16_t) (portIO_byte_read(PIC2_DATA_PORT) << 8) | (portIO_byte_read(PIC1_DATA_PORT));
+}
+
 void PIC_IRQ_enable(int irq) {
 /*
 	Unmasks the provided IRQ.
@@ -234,7 +242,7 @@ uint16_t PIC_ReadIRR() {
 	//This means that we can now read it.
 
 	//Combine both reads into a 16 bit bitmask, having the master PIC's IRR shifted 8 bits to the left.
-	uint16_t irr = (portIO_byte_read(PIC1_COMMAND_PORT) << 8) | portIO_byte_read(PIC2_COMMAND_PORT);
+	uint16_t irr = (portIO_byte_read(PIC2_COMMAND_PORT) << 8) | portIO_byte_read(PIC1_COMMAND_PORT);
 
 	return irr;
 }
@@ -260,7 +268,7 @@ uint16_t PIC_ReadISR() {
 	//This means that we can now read it.
 
 	//Combine both reads into a 16 bit bitmask, having the master PIC's IRR shifted 8 bits to the left.
-	uint16_t isr = (portIO_byte_read(PIC1_COMMAND_PORT) << 8) | portIO_byte_read(PIC2_COMMAND_PORT);
+	uint16_t isr = (portIO_byte_read(PIC2_COMMAND_PORT) << 8) | portIO_byte_read(PIC1_COMMAND_PORT);
 
 	return isr;
 }

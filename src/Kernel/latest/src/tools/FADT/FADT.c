@@ -37,5 +37,6 @@ int FADT_init() {
 
     }
     
+    FixedADT = 0;
     return -1;
 }

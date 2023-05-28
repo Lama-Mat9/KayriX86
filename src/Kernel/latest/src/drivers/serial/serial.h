@@ -18,5 +18,6 @@ void serial_byte_write(uint16_t port, uint8_t byte);
 uint8_t is_transmitter_empty(uint16_t port);
 uint8_t is_data_ready(uint16_t port);
 char serial_byte_read(uint16_t port);
+void serial_handle_interrupt(uint16_t port);
 
 #endif

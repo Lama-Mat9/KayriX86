@@ -57,7 +57,8 @@ struct FADT
     struct GenericAddressStructure ResetReg;
  
     uint8_t  ResetValue;
-    uint8_t  Reserved3[3];
+    uint8_t  Reserved3[2];
+    uint8_t  MinorRevision;
  
     // 64bit pointers - Available on ACPI 2.0+
     uint64_t                X_FirmwareControl;

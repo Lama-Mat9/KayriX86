@@ -27,6 +27,7 @@ int RSDT_init() {
         return 0;
     }
 
+    RootSDT = 0;
     return -1;
 }
 

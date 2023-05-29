@@ -12,9 +12,11 @@
 #include "drivers/PIC/pic.h"
 #include "microclib/memcmp.h"
 #include "microclib/std.h"
+#include "drivers/serial/commands/argparser.h"
 
 #include "drivers/serial/commands/TABLES/TABLES.h"
 #include "drivers/serial/commands/PIC/PIC.h"
+#include "drivers/serial/commands/MEMSHOW/MEMSHOW.h"
 
 //Internal prototypes
 void serial_handle_command(unsigned char* command, uint16_t port);
@@ -267,12 +269,23 @@ void serial_handle_command(unsigned char* command, uint16_t port) {
 
 	if (memcmp(command, "TABLES", strlen("TABLES")) == 0) {
 		cmd_TABLES(port);
+		return;
 	}
 	else if (memcmp(command, "PIC", strlen("PIC")) == 0) {
 		cmd_PIC(port);
-	} 		//Add commands here
-	else {
-		serial_printf(port, "Syntax error\f\r");
+		return;
+	}
+	else if (memcmp(command, "MEMSHOW", strlen("MEMSHOW")) == 0) {
+		
+		int64_t arg0 = argparser64(command, 0, 16);
+		int64_t arg1 = argparser64(command, 1, 10);
+
+		//If params are normal then execute
+		if(arg0 != -1 && arg1 != -1) {
+			cmd_MEMSHOW(port, (char*) (long) arg0, (unsigned int) arg1);
+			return;
+		}
 	}
 	
+	serial_printf(port, "Syntax error\f\r");
 }

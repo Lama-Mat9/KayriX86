@@ -10,5 +10,6 @@ char* u64toa(uint64_t value, char* string, int base);
 char* i64toa(int64_t value, char* string, int base);
 char* utoa(uint32_t value, char* string, int base);
 char* itoa(int32_t value, char* string, int base);
+int64_t atoi(unsigned char* ptr, uint32_t base);
 
 #endif

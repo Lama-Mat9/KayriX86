@@ -6,6 +6,9 @@
 #include <stdint.h>
 #include "std.h"
 
+//Local prototypes
+static int char_to_int(char character);
+
 static char* x64toa(uint64_t value, char* string, unsigned int base, unsigned int isNegative) {
 /*
 	Converts a 64bit unsigned integer value to a null-terminated string using the specified base,
@@ -59,9 +62,10 @@ static char* x64toa(uint64_t value, char* string, unsigned int base, unsigned in
 }
 
 //Signed 64bit
-char* i64toa(int64_t value, char* string, int base) {
-	x64toa((uint64_t) value, string, base, (base == 10 && value < 0));
-	return string;					//In the original itoa negative values are handled in base 10 only.
+char* i64toa(int64_t value, char* string, int base) { //Negative values are handled only in base 10
+	if(value < 0) x64toa((uint64_t) value * -1, string, base, (base == 10));
+	else x64toa((uint64_t) value, string, base, 0);
+	return string;
 }
 
 //Unsigned 64bit
@@ -71,9 +75,10 @@ char* u64toa(uint64_t value, char* string, int base) {
 }
 
 //Signed 32bit
-char* itoa(int32_t value, char* string, int base) {
-	x64toa((uint64_t) value, string, base, (base == 10 && value < 0));
-	return string;					//In the original itoa negative values are handled in base 10 only.
+char* itoa(int32_t value, char* string, int base) {	//Negative values are handled only in base 10
+	if(value < 0) x64toa((uint64_t) value * -1, string, base, (base == 10));
+	else x64toa((uint64_t) value, string, base, 0);
+	return string;					
 }
 
 //Unsigned 64bit
@@ -121,3 +126,41 @@ unsigned int strlen(const char* string) {
 	return count;
 }
 
+int64_t atoi(unsigned char* ptr, uint32_t base) {
+/*
+	Extracts an integer (positive or negative) from the given string using given base.
+
+	The given string has to be null terminated.
+*/
+
+	//Keeps our result
+    uint64_t result = 0;
+
+	//Positive if number is positive, negative otherwise
+    int sign = 1;
+    if(*ptr == '-') {
+        sign = -1;
+        ptr++;
+    }
+
+	//Stop when \0 is found
+    for(int i = 0; *(ptr + i) != '\0'; i++) {
+        result = (result * base) + char_to_int(*(ptr+i));
+    }
+
+	//Make the result negative if it was negative in the string. Stays positive otherwise.
+    result *= sign;
+
+    return result;
+}
+
+static int char_to_int(char character) {
+/*
+    Converts an ASCII character A-F a-F 0-9 to an integer.
+*/
+    if(character >= '0' && character <= '9') return (int) character - '0';
+    else if (character >= 'A' && character <= 'F') return (int) character - 'A' + 10;
+    else if (character >= 'a' && character <= 'f') return (int) character - 'a' + 10;
+
+    return 0;
+}

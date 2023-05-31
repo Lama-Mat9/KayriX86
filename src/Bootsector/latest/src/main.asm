@@ -9,6 +9,7 @@ boot:   ; Program is read from top to bottom, so this will be the "entry point".
     jmp main    ; We directly jump to main as the rest are just commands for nasm to make a Bios Parameter Block (BPB)
     
     times 0x3E-($-$$) db 0  ; Empty BPB (DOS 4.0 EBPB). Space seems to be allocated until 0x3E. We keep it fully empty.
+    nop		; Just there to comply with the FAT specification
 
 main:
     ; ---- Setup segmentation registers ----
